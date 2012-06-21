@@ -1,0 +1,5 @@
+*.d
+*.o
+pstops.c
+pdftopdf.cxx
+pt
