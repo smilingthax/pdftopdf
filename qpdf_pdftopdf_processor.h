@@ -2,6 +2,7 @@
 #define QPDF_PDFTOPDF_PROCESSOR_H
 
 #include "pdftopdf_processor.h"
+#include <qpdf/QPDF.hh>
 
 class QPDF_PDFTOPDF_Processor : public PDFTOPDF_Processor {
 public:
@@ -18,8 +19,7 @@ private:
   void closeFile();
   void error(const char *fmt,...);
 private:
-  FILE *f;
-//  PDF*
+  QPDF *pdf; // TODO: std::unique_ptr
 };
 
 #endif

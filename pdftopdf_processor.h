@@ -72,6 +72,8 @@ public:
 
 // TODO: virtual bool may_modify/may_print/?
 
+// TODO: problem qpdf wants password at load*
+
   virtual bool loadFile(FILE *f,ArgOwnership take=WillStayAlive) =0;
   virtual bool loadFilename(const char *name) =0;
 

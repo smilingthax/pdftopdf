@@ -13,6 +13,9 @@ ifneq "$(PACKAGES)" ""
   CPPFLAGS+=$(shell pkg-config --cflags $(PACKAGES))
   LDFLAGS+=$(shell pkg-config --libs $(PACKAGES))
 endif
+QPDF=/home/thobi/src/gsoc/2012/qpdf
+CPPFLAGS+=-I$(QPDF)/include
+LDFLAGS+=-L$(QPDF)/libqpdf/build -lqpdf
 
 CPPFLAGS+=$(shell cups-config --cflags) 
 LDFLAGS+=$(shell cups-config --libs)
@@ -44,4 +47,5 @@ clean:
                       [ -s $@ ] || rm -f $@'
 
 $(EXEC): $(OBJECTS)
-	$(CXX) -o $@ $^ $(LDFLAGS)
+#	$(CXX) -o $@ $^ $(LDFLAGS)
+	libtool --mode=link $(CXX) -o $@ $^ $(LDFLAGS)

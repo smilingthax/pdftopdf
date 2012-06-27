@@ -5,22 +5,22 @@
 #include <stdexcept>
 
 QPDF_PDFTOPDF_Processor::QPDF_PDFTOPDF_Processor()
-  : f(NULL)
+  : pdf(NULL)
 {
 }
 
 QPDF_PDFTOPDF_Processor::~QPDF_PDFTOPDF_Processor()
 {
-  if (f) {
-    fclose(f);
+  if (pdf) {
+    delete pdf;
   }
 }
 
 void QPDF_PDFTOPDF_Processor::closeFile() // {{{
 {
-  if (f) {
-    fclose(f);
-    f=NULL;
+  if (pdf) {
+    delete pdf;
+    pdf=NULL;
   }
 }
 // }}}
@@ -41,31 +41,35 @@ bool QPDF_PDFTOPDF_Processor::loadFile(FILE *f,ArgOwnership take) // {{{
   if (!f) {
     throw std::invalid_argument("loadFile(NULL,...) not allowed");
   }
+  try {
+    pdf=new QPDF;
+  } catch (...) {
+    if (take==TakeOwnership) {
+      fclose(f);
+    }
+    throw;
+  }
   switch (take) {
   case WillStayAlive:
-    // just open PDF, don't store f 
-// TODO open pdf
+    pdf->processFile("temp file",f,false);
     break;
   case TakeOwnership:
-// TODO open pdf  or close f
-    this->f=f;
+    pdf->processFile("temp file",f,true);
     break;
   case MustDuplicate:
     error("loadFile with MustDuplicate is not supported");
     return false;
   }
-  return false;
+  return true;
 }
 // }}}
 
 bool QPDF_PDFTOPDF_Processor::loadFilename(const char *name) // {{{
 {
-  FILE *f=fopen(name,"rb");
-  if (!f) {
-    error("Could not open file: %s",name);
-    return false;
-  }
-  return loadFile(f,TakeOwnership);
+  closeFile();
+  pdf=new QPDF;
+  pdf->processFile(name);
+  return true;
 }
 // }}}
 
