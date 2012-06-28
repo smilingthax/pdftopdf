@@ -503,10 +503,22 @@ int main(int argc,char **argv)
     debugdump();
 
 ProcessingParameters param;
-    param.dump();
 std::unique_ptr<PDFTOPDF_Processor> proc1(PDFTOPDF_Factory::processor());
-//param.nup.
+  param.page.width=595.276; // A4
+  param.page.height=841.89;
+
+  param.page.top=param.page.bottom=36.0;
+  param.page.right=param.page.left=18.0;
+  param.page.right=param.page.width-param.page.right;
+  param.page.top=param.page.height-param.page.top;
+
+// param.nup.calculate(4,0.707,0.707,param.nup);
+  param.nup.nupX=2;
+  param.nup.nupY=2;
+  param.nup.width=param.page.right-param.page.left;
+  param.nup.height=param.page.top-param.page.bottom;
 if (!proc1->loadFilename("in.pdf")) return 2;
+    param.dump();
 if (!proc1->setProcess(param)) return 3;
 proc1->emitFilename("out.pdf");
     return 1;

@@ -7,7 +7,7 @@
 void NupParameters::dump() const // {{{
 {
   printf("NupX: %d, NupY: %d\n"
-         "width: %f, width: %f\n",
+         "width: %f, height: %f\n",
          nupX,nupY,
          width,height);
 
