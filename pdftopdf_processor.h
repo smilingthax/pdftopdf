@@ -13,6 +13,7 @@ struct ProcessingParameters {
       fitplot(false),
       orientation(ROT_0),
       duplex(false),
+      border(NONE),
       reverse(false),
 
 //      pageLabel(NULL),
@@ -37,6 +38,7 @@ struct ProcessingParameters {
   PageRect page;
   Rotation orientation;
   bool duplex;
+  BorderType border;
   NupParameters nup;
   bool reverse;
 
@@ -49,9 +51,10 @@ struct ProcessingParameters {
   ...
     collate
   ...
-  pageRanges
 
   evenDuplex (was: even)
+
+  ??? shuffle 
 */
   bool emitJCL;
   int deviceCopies;
@@ -59,6 +62,7 @@ struct ProcessingParameters {
   // ppd changes
   bool setDuplex;
 
+  void dump() const;
 };
 
 #include <stdio.h>
@@ -72,13 +76,14 @@ public:
 
 // TODO: virtual bool may_modify/may_print/?
 
-// TODO: problem qpdf wants password at load*
+// TODO: problem qpdf wants password at load time
 
   virtual bool loadFile(FILE *f,ArgOwnership take=WillStayAlive) =0;
   virtual bool loadFilename(const char *name) =0;
 
   virtual bool setProcess(const ProcessingParameters &param) =0;
-  virtual void emitFile(FILE *dst) =0;
+  virtual void emitFile(FILE *dst,ArgOwnership take=WillStayAlive) =0;
+  virtual void emitFilename(const char *name) =0; // NULL -> stdout
 };
 
 class PDFTOPDF_Factory {

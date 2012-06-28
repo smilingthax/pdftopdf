@@ -227,6 +227,26 @@ static void parseRanges(const char *range,IntervalSet &ret) // {{{
 }
 // }}}
 
+static bool parseBorder(const char *val,BorderType &ret) // {{{
+{
+  assert(val);
+  if (strcasecmp(val,"none")==0) {
+    ret=BorderType::NONE;
+  } else if (strcasecmp(val,"single")==0) {
+    ret=BorderType::ONE_THIN;
+  } else if (strcasecmp(val,"single-thick")==0) {
+    ret=BorderType::ONE_THICK;
+  } else if (strcasecmp(val,"double")==0) {
+    ret=BorderType::TWO_THIN;
+  } else if (strcasecmp(val,"double-thick")==0) {
+    ret=BorderType::TWO_THICK;
+  } else {
+    return false;
+  }
+  return true;
+}
+// }}}
+
 void calculate(ppd_file_t *ppd,int num_options,cups_option_t *options,ProcessingParameters &param)
 {
   // param.numCopies initially from commandline
@@ -326,9 +346,9 @@ void calculate(ppd_file_t *ppd,int num_options,cups_option_t *options,Processing
   }
 
   if ( (val=cupsGetOption("page-border",num_options,options)) != NULL) {
-    if (!parseNupBorder(val,param.nup)) {
+    if (!parseBorder(val,param.border)) {
       error("Unsupported page-border value %s, using page-border=none!",val);
-      param.nup.border=BorderType::NONE;
+      param.border=BorderType::NONE;
     }
   }
 
@@ -481,6 +501,14 @@ int main(int argc,char **argv)
   if ( (argc<6)||(argc>7) ) {
     fprintf(stderr,"Usage: %s job-id user title copies options [file]\n",argv[0]);
     debugdump();
+
+ProcessingParameters param;
+    param.dump();
+std::unique_ptr<PDFTOPDF_Processor> proc1(PDFTOPDF_Factory::processor());
+//param.nup.
+if (!proc1->loadFilename("in.pdf")) return 2;
+if (!proc1->setProcess(param)) return 3;
+proc1->emitFilename("out.pdf");
     return 1;
   }
 
@@ -530,7 +558,8 @@ int main(int argc,char **argv)
 
   emitPreamble(ppd,param); // ppdEmit, JCL stuff
 
-  proc->emitFile(stdout);
+//  proc->emitFile(stdout);
+  proc->emitFilename(NULL);
 
   emitPostamble(ppd,param);
   ppdClose(ppd);

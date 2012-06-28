@@ -4,3 +4,5 @@ pstops.c
 pdftopdf.cxx
 pt
 .libs
+in.pdf
+out.pdf

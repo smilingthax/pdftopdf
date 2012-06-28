@@ -4,17 +4,12 @@
 #include "pptypes.h"
 #include <utility>
 
-enum BorderType { NONE=0, ONE_THIN=2, ONE_THICK=3, TWO_THIN=4, TWO_THICK=5,
-                  ONE=0x02, TWO=0x04, THICK=0x01};
-void BorderType_dump(BorderType border);
-
 struct NupParameters {
   NupParameters() 
     : nupX(1),nupY(1),
       width(NAN),height(NAN),
       first(X),
-      xstart(CENTER),ystart(CENTER),
-      border(NONE),
+      xstart(LEFT),ystart(TOP),
       xalign(CENTER),yalign(CENTER)
   {}
 
@@ -27,8 +22,6 @@ struct NupParameters {
   // ordering
   Axis first;
   Position xstart,ystart;
-
-  BorderType border;
 
   Position xalign,yalign;
 
@@ -49,8 +42,6 @@ struct NupPageEdit {
   // also stores in_width/in_height, unscaled!
   // everything in "outer"-page coordinates
   PageRect sub;
-
-  BorderType border; // just copied, for convenience // TODO?
 
   void dump() const;
 };
@@ -77,6 +68,5 @@ private:
 // TODO? elsewhere
 // parsing functions for cups parameters (will not calculate nupX,nupY!)
 bool parseNupLayout(const char *val,NupParameters &ret); // lrtb, btlr, ...
-bool parseNupBorder(const char *val,NupParameters &ret); // none,single,...,double-thick
 
 #endif

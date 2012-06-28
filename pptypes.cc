@@ -31,6 +31,31 @@ void Position_dump(Position pos,Axis axis) // {{{
 }
 // }}}
 
+
+void Rotation_dump(Rotation rot) // {{{
+{
+  static const char *rstr[4]={"0 deg","90 deg","180 deg","270 deg"}; // CCW
+  if ( (rot<ROT_0)||(rot>ROT_270) ) {
+    printf("(bad rotation: %d)",rot);
+  } else {
+    fputs(rstr[rot+1],stdout);
+  }
+}
+// }}}
+
+
+void BorderType_dump(BorderType border) // {{{
+{
+  if ( (border<NONE)||(border==1)||(border>TWO_THICK) ) {
+    printf("(bad border: %d)",border);
+  } else {
+    static const char *bstr[6]={"None",NULL,"one thin","one thick","two thin","two thick"};
+    fputs(bstr[border],stdout);
+  }
+}
+// }}}
+
+
 void PageRect::rotate(Rotation r) // {{{
 {
   if (r>=ROT_180) {

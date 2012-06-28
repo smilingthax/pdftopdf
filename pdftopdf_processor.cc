@@ -3,6 +3,64 @@
 #include <stdio.h>
 #include <assert.h>
 
+void ProcessingParameters::dump() const // {{{
+{
+  printf("jobId: %d, nupCopies: %d\n",
+         jobId,numCopies);
+  printf("user: %s, title: %s\n",
+         (user)?user:"(null)",(title)?title:"(null)");
+  printf("fitplot: %s\n",
+         (fitplot)?"true":"false");
+
+  page.dump();
+
+  printf("Rotation(CCW): ");
+  Rotation_dump(orientation);
+  printf("\n");
+
+  printf("duplex: %s\n",
+         (duplex)?"true":"false");
+
+  printf("Border: ");
+  BorderType_dump(border);
+  printf("\n");
+
+  nup.dump();
+
+  printf("reverse: %s\n",
+         (reverse)?"true":"false");
+
+  printf("evenPages: %s, oddPages: %s\n",
+         (evenPages)?"true":"false",
+         (oddPages)?"true":"false");
+
+  printf("page range: ");
+  pageRange.dump();
+
+  printf("Position: ");
+  Position_dump(xpos,Axis::X);
+  printf("/");
+  Position_dump(ypos,Axis::Y);
+  printf("\n");
+/*
+  // std::string pageLabel; // or NULL?  must stay/dup!
+  ...
+    collate
+  ...
+
+  evenDuplex (was: even)
+
+  ??? shuffle 
+*/
+  printf("emitJCL: %s\n",
+         (emitJCL)?"true":"false");
+  printf("deviceCopies: %d\n",
+         deviceCopies);
+  printf("setDuplex: %s\n",
+         (setDuplex)?"true":"false");
+}
+// }}}
+
 PDFTOPDF_Processor *PDFTOPDF_Factory::processor()
 {
   return new QPDF_PDFTOPDF_Processor();

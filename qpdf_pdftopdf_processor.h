@@ -13,7 +13,8 @@ public:
   bool loadFilename(const char *name);
 
   bool setProcess(const ProcessingParameters &param);
-  void emitFile(FILE *dst);
+  void emitFile(FILE *dst,ArgOwnership take=WillStayAlive);
+  void emitFilename(const char *name);
 
 private:
   void closeFile();

@@ -4,17 +4,6 @@
 #include <string.h>
 #include <utility>
 
-void BorderType_dump(BorderType border) // {{{
-{
-  if ( (border<NONE)||(border==1)||(border>TWO_THICK) ) {
-    printf("Bad Border: %d\n",border);
-  } else {
-    static const char *bstr[6]={"None",NULL,"one thin","one thick","two thin","two thick"};
-    printf("Border: %s\n",bstr[border]);
-  }
-}
-// }}}
-
 void NupParameters::dump() const // {{{
 {
   printf("NupX: %d, NupY: %d\n"
@@ -51,14 +40,11 @@ void NupParameters::dump() const // {{{
            order[opos+fpos],order[(opos+2)%4+spos]);
   }
 
-  BorderType_dump(border);
-
   fputs("Alignment: ",stdout);
   Position_dump(xalign,Axis::X);
   fputs("/",stdout); 
   Position_dump(yalign,Axis::Y);
-
-  fputs("\n\n",stdout);
+  fputs("\n",stdout);
 }
 // }}}
 
@@ -86,8 +72,6 @@ void NupPageEdit::dump() const // {{{
   printf("xpos: %f, ypos: %f, scale: %f\n",
          xpos,ypos,scale);
   sub.dump();
-
-  BorderType_dump(border);
 }
 // }}}
 
@@ -166,8 +150,6 @@ bool NupState::nextPage(float in_width,float in_height,NupPageEdit &ret) // {{{
   auto sub=convert_order(subpage);
   calculate_edit(sub.first,sub.second,ret);
 
-  ret.border=param.border;
-
   return (subpage==0);
 }
 // }}}
@@ -212,26 +194,6 @@ bool parseNupLayout(const char *val,NupParameters &ret) // {{{
   }
 
   return (val[4]==0); // everything seen?
-}
-// }}}
-
-bool parseNupBorder(const char *val,NupParameters &ret) // {{{
-{
-  assert(val);
-  if (strcasecmp(val,"none")==0) {
-    ret.border=BorderType::NONE;
-  } else if (strcasecmp(val,"single")==0) {
-    ret.border=BorderType::ONE_THIN;
-  } else if (strcasecmp(val,"single-thick")==0) {
-    ret.border=BorderType::ONE_THICK;
-  } else if (strcasecmp(val,"double")==0) {
-    ret.border=BorderType::TWO_THIN;
-  } else if (strcasecmp(val,"double-thick")==0) {
-    ret.border=BorderType::TWO_THICK;
-  } else {
-    return false;
-  }
-  return true;
 }
 // }}}
 
