@@ -67,6 +67,15 @@ NupState::NupState(const NupParameters &param) // {{{
 }
 // }}}
 
+void NupState::reset() // {{{
+{
+  in_pages=0;
+  out_pages=0;
+//  nup=param.nupX*param.nupY;
+  subpage=nup;
+}
+// }}}
+
 void NupPageEdit::dump() const // {{{
 {
   printf("xpos: %f, ypos: %f, scale: %f\n",

@@ -4,6 +4,7 @@
 #include "pptypes.h"
 #include <utility>
 
+// you have to provide this
 struct NupParameters {
   NupParameters() 
     : nupX(1),nupY(1),
@@ -31,6 +32,7 @@ struct NupParameters {
   void dump() const;
 };
 
+// you get this
 struct NupPageEdit {
   // required transformation: first translate, then scale
   float xpos,ypos;  // TODO:  already given by sub.left,sub.bottom    [but for rotation?]
@@ -46,9 +48,24 @@ struct NupPageEdit {
   void dump() const;
 };
 
+/*
+ This class does the number-up calculation. Example:
+
+  NupParameters param;
+  param.xyz=...; // fill it with your data!
+
+  NupState nup(param);
+  NupPageEdit edit;
+  for (auto page : your_pages) {
+    bool newPage=nup.nextPage(page.w,page.h,edit); // w,h from input page
+    // create newPage, if required; then place current page as specified in edit
+  }
+*/
 class NupState {
 public:
   NupState(const NupParameters &param);
+
+  void reset();
 
   // will overwrite ret with the new parameters
   // returns true, if a new output page should be started first
