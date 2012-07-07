@@ -114,13 +114,8 @@ QPDFObjectHandle makeXObject(QPDF *pdf,QPDFObjectHandle page)
 
   std::vector<QPDFObjectHandle> contents=page.getPageContents();  // (will assertPageObject)
 
-  // First calculate size. Hmm.
-  Pl_Discard pl0;
-  Pl_Count pl1("pl1",&pl0);
   auto ph=PointerHolder<QPDFObjectHandle::StreamDataProvider>(new CombineFromContents_Provider(contents));
-  ph->provideStreamData(0,0,&pl1);
-
-  ret.replaceStreamData(ph,filter,decode_parms,pl1.getCount());
+  ret.replaceStreamData(ph,filter,decode_parms);
 
   return ret;
 }

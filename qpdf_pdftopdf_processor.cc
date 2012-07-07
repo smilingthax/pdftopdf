@@ -222,10 +222,10 @@ void QPDF_PDFTOPDF_Processor::emitFile(FILE *f,ArgOwnership take) // {{{
   QPDFWriter out(*pdf);
   switch (take) {
   case WillStayAlive:
-    out.setOutputFile(f,false);
+    out.setOutputFile("temp file",f,false);
     break;
   case TakeOwnership:
-    out.setOutputFile(f,true);
+    out.setOutputFile("temp file",f,true);
     break;
   case MustDuplicate:
     error("emitFile with MustDuplicate is not supported");
