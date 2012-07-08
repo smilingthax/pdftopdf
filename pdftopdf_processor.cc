@@ -37,27 +37,35 @@ void ProcessingParameters::dump() const // {{{
   printf("page range: ");
   pageRange.dump();
 
+  printf("mirror: %s\n",
+         (mirror)?"true":"false");
+
   printf("Position: ");
   Position_dump(xpos,Axis::X);
   printf("/");
   Position_dump(ypos,Axis::Y);
   printf("\n");
+
+  printf("collate: %s\n",
+         (collate)?"true":"false");
 /*
   // std::string pageLabel; // or NULL?  must stay/dup!
   ...
-    collate
   ...
-
-  evenDuplex (was: even)
 
   ??? shuffle 
 */
+  printf("evenDuplex: %s\n",
+         (evenDuplex)?"true":"false");
+
   printf("emitJCL: %s\n",
          (emitJCL)?"true":"false");
   printf("deviceCopies: %d\n",
          deviceCopies);
   printf("setDuplex: %s\n",
          (setDuplex)?"true":"false");
+  printf("unsetCollate: %s\n",
+         (unsetCollate)?"true":"false");
 }
 // }}}
 

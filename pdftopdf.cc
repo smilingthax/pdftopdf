@@ -33,6 +33,7 @@ static void error(const char *fmt,...) // {{{
 struct PrinterFeatures {
   PrinterFeatures() : canCollate(false)
   {}
+// TODO: ppd->manual_copies
 
   bool canCollate;
 //  bool 
@@ -56,6 +57,17 @@ void setFinalPPD(ppd_file_t *ppd,const ProcessingParameters &param)
   if ( (param.setDuplex)&&(ppdFindOption(ppd,"Duplex")!=NULL) ) {
     ppdMarkOption(ppd,"Duplex","True");
     ppdMarkOption(ppd,"Duplex","On");
+  }
+
+  // we do it, printer should not
+  ppd_choice_t *choice;
+  if ( (choice=ppdFindMarkedChoice(ppd,"MirrorPrint")) != NULL) {
+    choice->marked=0;
+  }
+
+  // hardware can't collate the way we want it. Thus we collate, printer shall not
+  if (param.unsetCollate) {
+    ppdMarkOption(ppd,"Collate","False");
   }
 /*
 
@@ -150,6 +162,26 @@ static bool ppdDefaultOrder(ppd_file_t *ppd) // {{{
     val=attr->value;
   }
   return (val)&&(strcasecmp(val,"Reverse")==0);
+}
+// }}}
+
+static bool optGetCollate(int num_options,cups_option_t *options) // {{{
+{
+  if (is_true(cupsGetOption("Collate",num_options,options))) {
+    return true;
+  }
+
+  const char *val=NULL;
+  if ( (val=cupsGetOption("multiple-document-handling",num_options,options)) != NULL) {
+   /* This IPP attribute is unnecessarily complicated:
+    *   single-document, separate-documents-collated-copies, single-document-new-sheet:
+    *      -> collate (true)
+    *   separate-documents-uncollated-copies:
+    *      -> can be uncollated (false)
+    */
+    return (strcasecmp(val,"separate-documents-uncollated-copies")!=0);
+  }
+  return false;
 }
 // }}}
 
@@ -263,6 +295,7 @@ void calculate(ppd_file_t *ppd,int num_options,cups_option_t *options,Processing
       val=cupsGetOption("ipp-attribute-fidelity",num_options,options);
     }
   }
+// TODO FIXME?  pstops checks =="true", pdftops !is_false
   param.fitplot=!is_false(val);
 
   int ipprot;
@@ -373,20 +406,17 @@ void calculate(ppd_file_t *ppd,int num_options,cups_option_t *options,Processing
     parseRanges(val,param.pageRange);
   }
 
-  // TODO: MirrorPrint / mirror
-
-  // TODO: emit-jcl
-
-  // position here.
-
-  // TODO: Collate / multiple-document-handling
-
-  // TODO: scaling
-  // TODO: natural-scaling
+  ppd_choice_t *choice;
+  if ( (choice=ppdFindMarkedChoice(ppd,"MirrorPrint")) != NULL) {
+    val=choice->choice;
+  } else {
+    val=cupsGetOption("mirror",num_options,options);
+  }
+  param.mirror=is_true(val);
 
 /*
   ...
-
+  // TODO: emit-jcl
 */
 
   if ( (val=cupsGetOption("position",num_options,options)) != NULL) {
@@ -397,15 +427,43 @@ void calculate(ppd_file_t *ppd,int num_options,cups_option_t *options,Processing
     }
   }
 
+  param.collate=optGetCollate(num_options,options);
+  // FIXME? pdftopdf also considers if ppdCollate is set (only when cupsGetOption is /not/ given) [and if is_true overrides param.collate=true]  -- pstops does not
+
 /*
+  // TODO: scaling
+  // TODO: natural-scaling
+
   scaling
 
-  Mirror...
-  
 
+  if ((val = cupsGetOption("scaling",num_options,options)) != 0) {
+    scaling = atoi(val) * 0.01;
+    fitplot = gTrue;
+  } else if (fitplot) {
+    scaling = 1.0;
+  }
+  if ((val = cupsGetOption("natural-scaling",num_options,options)) != 0) {
+    naturalScaling = atoi(val) * 0.01;
+  }
+
+bool checkFeature(const char *feature, int num_options, cups_option_t *options) // {{{
+{
+  const char *val;
+  ppd_attr_t *attr;
+
+  return ( (val=cupsGetOption(feature,num_options,options)) != NULL && is_true(val)) ||
+         ( (attr=ppdFindAttr(ppd,feature,0)) != NULL && is_true(attr->val));
+}
+// }}}
 */
 
-  // TODO: cupsEvenDuplex
+  // make pages a multiple of two (only considered when duplex is on).
+  // FIXME? pdftopdf also supports it as cmdline option (via checkFeature())
+  ppd_attr_t *attr;
+  if ( (attr=ppdFindAttr(ppd,"cupsEvenDuplex",0)) != NULL) {
+    param.evenDuplex=is_true(attr->value);
+  }
 
   // TODO? pdftopdf* ?
   // TODO?! pdftopdfAutoRotate
@@ -424,6 +482,39 @@ void parseOpts(int argc, char **argv)
   }
 */
 }
+
+/*
+  TODO: 
+
+  // check collate device
+  if (P2PDoc::options.collate && !ppd->manual_copies) {
+    if ((choice = ppdFindMarkedChoice(ppd,"Collate")) != NULL &&
+       !strcasecmp(choice->choice,"true")) {
+      ppd_option_t *opt;
+
+      if ((opt = ppdFindOption(ppd,"Collate")) != NULL &&
+        !opt->conflicted) {
+	deviceCollate = gTrue;
+      } else {
+	ppdMarkOption(ppd,"Collate","False");
+      }
+    }
+  }
+
+  // check OutputOrder device
+  if (P2PDoc::options.reverse) {
+    if (ppdFindOption(ppd,"OutputOrder") != NULL) {
+      deviceReverse = gTrue;
+    }
+  }
+
+  // TODO...
+  if (!param.duplex) {
+    param.evenDuplex=false;
+  } else if ( (slow_collate)||(slow_order) ) {
+    param.evenDuplex=true;
+  }
+*/
 
 void dump_options(int num_options,cups_option_t *options)
 {

@@ -19,10 +19,15 @@ struct ProcessingParameters {
 //      pageLabel(NULL),
       evenPages(true),oddPages(true),
 
+      mirror(false),
+
       xpos(CENTER),ypos(CENTER),
 
+      collate(false),
+      evenDuplex(false),
+
       emitJCL(true),deviceCopies(1),
-      setDuplex(false)
+      setDuplex(false),unsetCollate(false)
   {
     page.width=612.0; // letter
     page.height=792.0;
@@ -46,21 +51,26 @@ struct ProcessingParameters {
   bool evenPages,oddPages;
   IntervalSet pageRange;
 
+  bool mirror;
+
   Position xpos,ypos;
+
+  bool collate;
 /*
   ...
-    collate
   ...
-
-  evenDuplex (was: even)
 
   ??? shuffle 
 */
+  bool evenDuplex; // make number of pages a multiple of 2
+
   bool emitJCL;
   int deviceCopies;
 
   // ppd changes
   bool setDuplex;
+  // unsetMirror  (always)
+  bool unsetCollate;
 
   void dump() const;
 };
