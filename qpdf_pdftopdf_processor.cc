@@ -162,17 +162,17 @@ bool QPDF_PDFTOPDF_Processor::setProcess(const ProcessingParameters &param) // {
       xobjs.clear();
     }
 
-// TODO: add frame, possibly already to original page
-    std::string xoname="/X"+QUtil::int_to_string(iA);
+// TODO: add frame, possibly already to original page?
+    std::string xoname="/X"+QUtil::int_to_string(iA+1);
     xobjs[xoname]=makeXObject(pdf,pages[iA]);
     pdf->removePage(pages[iA]);
 
 // TODO: -left/-right needs to be added back?
-    content.append("q\n ");
+    content.append("q\n  ");
     content.append(QUtil::double_to_string(pe.scale)+" 0 0 "+
                    QUtil::double_to_string(pe.scale)+" "+
                    QUtil::double_to_string(pe.xpos+xpos)+" "+
-                   QUtil::double_to_string(pe.ypos+ypos)+" cm\n ");
+                   QUtil::double_to_string(pe.ypos+ypos)+" cm\n  ");
     content.append(xoname+" Do\n");
     content.append("Q\n");
 #if 1
