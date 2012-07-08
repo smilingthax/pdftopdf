@@ -1,0 +1,25 @@
+
+struct PageHandle {
+  int width;
+  int height;
+  _some_id_or_pointer_
+};
+
+class pdftopdf_processor {
+public:
+
+  std::vector<PageHandle> get_pages();
+
+// TODO: landscape
+
+  PageHandle new_page();
+
+  void add_border_rect(PageHandle &ph,const Rect &rect,BorderType border);
+
+  void add_subpage(PageHandle &ph,float xpos,float ypos,float scale); // or simply: const NupPageEdit &edit
+
+  void add_page(PageHandle &ph); // at current position -- either from get_pages() or new_page()+add_subpage()-calls
+
+//  void remove_page(PageHandle &ph);  // not needed: we construct from scratch, at least conceptually.
+
+};
