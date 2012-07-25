@@ -4,6 +4,7 @@
 #include "pdftopdf_processor.h"
 #include <qpdf/QPDF.hh>
 
+/*
 class QPDF_PDFTOPDF_Processor : public PDFTOPDF_Processor {
 public:
   QPDF_PDFTOPDF_Processor();
@@ -21,6 +22,57 @@ private:
   void error(const char *fmt,...);
 private:
   QPDF *pdf; // TODO: std::unique_ptr
+};
+*/
+
+class QPDF_PDFTOPDF_PageHandle : public PDFTOPDF_PageHandle {
+public:
+  virtual PageRect getRect() const;
+  virtual void add_border_rect(const PageRect &rect,BorderType border);
+  virtual void add_subpage(const std::shared_ptr<PDFTOPDF_PageHandle> &sub,float xpos,float ypos,float scale);
+
+  void debug(const PageRect &rect,float xpos,float ypos);
+private:
+  friend class QPDF_PDFTOPDF_Processor;
+  // 1st mode: existing
+  QPDF_PDFTOPDF_PageHandle(QPDFObjectHandle page,int orig_no=-1);
+  QPDFObjectHandle page;
+  int no;
+
+  // 2nd mode: create new
+  QPDF_PDFTOPDF_PageHandle(QPDF *pdf,float width,float height);
+  std::map<std::string,QPDFObjectHandle> xobjs;
+  std::string content;
+private:
+  bool isExisting() const;
+  QPDFObjectHandle get(); // only once!
+};
+
+class QPDF_PDFTOPDF_Processor : public PDFTOPDF_Processor {
+public:
+  virtual bool loadFile(FILE *f,ArgOwnership take=WillStayAlive);
+  virtual bool loadFilename(const char *name);
+
+// TODO: virtual bool may_modify/may_print/?
+  virtual bool check_print_permissions();
+
+// virtual bool setProcess(const ProcessingParameters &param) =0;
+
+  virtual std::vector<std::shared_ptr<PDFTOPDF_PageHandle>> get_pages();
+  virtual std::shared_ptr<PDFTOPDF_PageHandle> new_page(float width,float height);
+
+  virtual void add_page(std::shared_ptr<PDFTOPDF_PageHandle> page);
+
+  virtual void emitFile(FILE *dst,ArgOwnership take=WillStayAlive);
+  virtual void emitFilename(const char *name);
+
+private:
+  void closeFile();
+  void error(const char *fmt,...);
+  void start();
+private:
+  std::unique_ptr<QPDF> pdf;
+  std::vector<QPDFObjectHandle> orig_pages;
 };
 
 #endif

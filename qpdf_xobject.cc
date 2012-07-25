@@ -106,6 +106,7 @@ QPDFObjectHandle makeXObject(QPDF *pdf,QPDFObjectHandle page)
 
   // Note: [/Name]  (reqd. only in 1.0 -- but there we even can't use our normal img/patter procedures)
 
+// none:
 //  QPDFObjectHandle filter=QPDFObjectHandle::newArray();
 //  QPDFObjectHandle decode_parms=QPDFObjectHandle::newArray();
   // null leads to use of "default filters" from qpdf's settings

@@ -35,6 +35,10 @@ struct ProcessingParameters {
     page.bottom=36.0;
     page.left=18.0;
     page.right=page.width-18.0;
+
+    // everything
+    pageRange.add(1);
+    pageRange.finish();
   }
 
   int jobId, numCopies;
@@ -72,34 +76,60 @@ struct ProcessingParameters {
   // unsetMirror  (always)
   bool unsetCollate;
 
+  // helper functions
+  bool withPage(int outno) const; // 1 based
   void dump() const;
 };
 
 #include <stdio.h>
+#include <memory>
 
 enum ArgOwnership { WillStayAlive,MustDuplicate,TakeOwnership };
+
+class PDFTOPDF_PageHandle {
+public:
+  virtual ~PDFTOPDF_PageHandle() {}
+  virtual PageRect getRect() const =0;
+  virtual void add_border_rect(const PageRect &rect,BorderType border) =0;
+  virtual void add_subpage(const std::shared_ptr<PDFTOPDF_PageHandle> &sub,float xpos,float ypos,float scale) =0; // or simply: const NupPageEdit &edit
+};
 
 // TODO: ... error output?
 class PDFTOPDF_Processor { // abstract interface
 public:
   virtual ~PDFTOPDF_Processor() {}
 
-// TODO: virtual bool may_modify/may_print/?
-
 // TODO: problem qpdf wants password at load time
-
   virtual bool loadFile(FILE *f,ArgOwnership take=WillStayAlive) =0;
   virtual bool loadFilename(const char *name) =0;
 
-  virtual bool setProcess(const ProcessingParameters &param) =0;
+// TODO: virtual bool may_modify/may_print/?
+  virtual bool check_print_permissions() =0;
+
+  virtual std::vector<std::shared_ptr<PDFTOPDF_PageHandle>> get_pages() =0; // shared_ptr because of type erasure (deleter)
+
+ // virtual bool setProcess(const ProcessingParameters &param) =0;
+
+// TODO: landscape
+  virtual std::shared_ptr<PDFTOPDF_PageHandle> new_page(float width,float height) =0;
+
+  virtual void add_page(std::shared_ptr<PDFTOPDF_PageHandle> page) =0; // at current position -- either from get_pages() or new_page()+add_subpage()-calls  (or [also allowed]: empty)
+
+//  void remove_page(std::shared_ptr<PDFTOPDF_PageHandle> ph);  // not needed: we construct from scratch, at least conceptually.
+
   virtual void emitFile(FILE *dst,ArgOwnership take=WillStayAlive) =0;
   virtual void emitFilename(const char *name) =0; // NULL -> stdout
 };
+
 
 class PDFTOPDF_Factory {
 public:
   // never NULL, but may throw.
   static PDFTOPDF_Processor *processor();
 };
+
+// This is all we want: 
+bool processPDFTOPDF(PDFTOPDF_Processor &proc,const ProcessingParameters &param);
+
 
 #endif

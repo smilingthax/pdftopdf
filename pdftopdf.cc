@@ -611,7 +611,7 @@ std::unique_ptr<PDFTOPDF_Processor> proc1(PDFTOPDF_Factory::processor());
 param.nup.yalign=TOP;
 if (!proc1->loadFilename("in.pdf")) return 2;
     param.dump();
-if (!proc1->setProcess(param)) return 3;
+if (!processPDFTOPDF(*proc1,param)) return 3;
 proc1->emitFilename("out.pdf");
     return 1;
   }
@@ -655,7 +655,7 @@ proc1->emitFilename("out.pdf");
     }
   }
 
-  if (!proc->setProcess(param))  {
+  if (!processPDFTOPDF(*proc,param)) {
     ppdClose(ppd);
     return 2;
   }
