@@ -2,6 +2,8 @@
 #include "pdftopdf_processor.h"
 #include <cups/ppd.h>
 
+#include <string.h>
+
 // TODO: -currently changes ppd.
 //
 static void emitJCLOptions(FILE *fp, ppd_file_t *ppd, int copies)
