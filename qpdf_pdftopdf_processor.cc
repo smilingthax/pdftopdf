@@ -88,7 +88,10 @@ void QPDF_PDFTOPDF_PageHandle::add_border_rect(const PageRect &rect,BorderType b
                     *post="%pdftopdf Q\n"
                           "Q\n";
 
-  std::string boxcmd="q 1 w 0.1 G \n 10 10 100 100 re S \nQ\n";
+  std::string boxcmd=std::string("q 1 w 0.1 G \n")+ // TODO
+                     QUtil::double_to_string(rect.left)+" "+QUtil::double_to_string(rect.top)+"  "+
+                     QUtil::double_to_string(rect.right-rect.left)+" "+QUtil::double_to_string(rect.bottom-rect.top)+" re S \nQ\n";
+  // TODO: border.style ...
 
 // if (!isExisting()) {
 //   // TODO: only after 

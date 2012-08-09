@@ -609,6 +609,7 @@ std::unique_ptr<PDFTOPDF_Processor> proc1(PDFTOPDF_Factory::processor());
   param.nup.width=param.page.right-param.page.left;
   param.nup.height=param.page.top-param.page.bottom;
 param.nup.yalign=TOP;
+param.border=BorderType::ONE;
 if (!proc1->loadFilename("in.pdf")) return 2;
     param.dump();
 if (!processPDFTOPDF(*proc1,param)) return 3;

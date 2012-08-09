@@ -98,7 +98,7 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,const ProcessingParameters &param)
 
 // TODO: -left/-right needs to be subtracted from param.nup.width/height
 
-  std::vector<std::shared_ptr<PDFTOPDF_PageHandle>> pages=proc.get_pages();
+  std::vector<std::shared_ptr<PDFTOPDF_PageHandle>> pages=proc.get_pages(); // TODO: shuffle
   const int numPages=pages.size();
   std::shared_ptr<PDFTOPDF_PageHandle> curpage;
   int outputno=0;
@@ -123,10 +123,11 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,const ProcessingParameters &param)
 
 // TODO: add frame, possibly already to original page?
 // TODO? -left/-right needs to be added back?
+pages[iA]->add_border_rect(rect,param.border);
     curpage->add_subpage(pages[iA],pgedit.xpos+xpos,pgedit.ypos+ypos,pgedit.scale);
 
     if (auto dbg=dynamic_cast<QPDF_PDFTOPDF_PageHandle *>(curpage.get())) {
-      dbg->debug(pgedit.sub,xpos,ypos);
+//      dbg->debug(pgedit.sub,xpos,ypos);
     }
 
 //    pgedit.dump();
