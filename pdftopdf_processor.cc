@@ -115,7 +115,7 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,const ProcessingParameters &param)
 //    printf("%d\n",newPage);
     if (newPage) {
       if (param.withPage(outputno)) { 
-        proc.add_page(curpage); // empty will just no-op
+        proc.add_page(curpage,param.reverse); // empty will just no-op;  reverse -> insert at beginning
       }
       outputno++;
       curpage=proc.new_page(param.page.width,param.page.height);
@@ -133,7 +133,7 @@ pages[iA]->add_border_rect(rect,param.border);
 //    pgedit.dump();
   }
   if (param.withPage(outputno)) { 
-    proc.add_page(curpage); // empty will just no-op
+    proc.add_page(curpage,param.reverse); // empty will just no-op;  reverse -> insert at beginning
   }
 /*
 

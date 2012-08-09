@@ -88,7 +88,13 @@ void QPDF_PDFTOPDF_PageHandle::add_border_rect(const PageRect &rect,BorderType b
                     *post="%pdftopdf Q\n"
                           "Q\n";
 
-  std::string boxcmd=std::string("q 1 w 0.1 G \n")+ // TODO
+// fscale:  inverse_scale (from nup, fitplot)
+// margin:  2.25*fscale
+// line_width:  ((thick)?0.5:0.24)*fscale
+// (PageLeft+margin,PageBottom+margin) rect (PageRight-PageLeft-2*margin,...)   ... for nup>1: PageLeft=0,etc.
+   //  if (double)  margin+=2*fscale ...rect...
+
+  std::string boxcmd=std::string("q 1 w 0 G \n")+ // TODO
                      QUtil::double_to_string(rect.left)+" "+QUtil::double_to_string(rect.top)+"  "+
                      QUtil::double_to_string(rect.right-rect.left)+" "+QUtil::double_to_string(rect.bottom-rect.top)+" re S \nQ\n";
   // TODO: border.style ...
@@ -99,7 +105,7 @@ void QPDF_PDFTOPDF_PageHandle::add_border_rect(const PageRect &rect,BorderType b
 // }
 
   std::vector<QPDFObjectHandle> cntnt=page.getPageContents();
-  if (cntnt.size()>=3) {
+  if (cntnt.size()>=3) { // detect previous invocation box and replace
     // check cntnt.front() and cntnt.back()
     PointerHolder<Buffer> pbuf_f=cntnt.front().getStreamData();
     PointerHolder<Buffer> pbuf_b=cntnt.back().getStreamData();
@@ -283,12 +289,12 @@ std::shared_ptr<PDFTOPDF_PageHandle> QPDF_PDFTOPDF_Processor::new_page(float wid
 }
 // }}}
 
-void QPDF_PDFTOPDF_Processor::add_page(std::shared_ptr<PDFTOPDF_PageHandle> page) // {{{
+void QPDF_PDFTOPDF_Processor::add_page(std::shared_ptr<PDFTOPDF_PageHandle> page,bool front) // {{{
 {
   assert(pdf);
   auto qpage=dynamic_cast<QPDF_PDFTOPDF_PageHandle *>(page.get());
   if (qpage) {
-    pdf->addPage(qpage->get(),false);
+    pdf->addPage(qpage->get(),front);
   }
 }
 // }}}

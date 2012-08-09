@@ -113,7 +113,7 @@ public:
 // TODO: landscape
   virtual std::shared_ptr<PDFTOPDF_PageHandle> new_page(float width,float height) =0;
 
-  virtual void add_page(std::shared_ptr<PDFTOPDF_PageHandle> page) =0; // at current position -- either from get_pages() or new_page()+add_subpage()-calls  (or [also allowed]: empty)
+  virtual void add_page(std::shared_ptr<PDFTOPDF_PageHandle> page,bool front) =0; // at back/front -- either from get_pages() or new_page()+add_subpage()-calls  (or [also allowed]: empty)
 
 //  void remove_page(std::shared_ptr<PDFTOPDF_PageHandle> ph);  // not needed: we construct from scratch, at least conceptually.
 

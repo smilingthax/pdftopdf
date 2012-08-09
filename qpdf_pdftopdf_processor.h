@@ -61,7 +61,7 @@ public:
   virtual std::vector<std::shared_ptr<PDFTOPDF_PageHandle>> get_pages();
   virtual std::shared_ptr<PDFTOPDF_PageHandle> new_page(float width,float height);
 
-  virtual void add_page(std::shared_ptr<PDFTOPDF_PageHandle> page);
+  virtual void add_page(std::shared_ptr<PDFTOPDF_PageHandle> page,bool front);
 
   virtual void emitFile(FILE *dst,ArgOwnership take=WillStayAlive);
   virtual void emitFilename(const char *name);
