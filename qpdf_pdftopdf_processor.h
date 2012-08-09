@@ -33,6 +33,9 @@ public:
 
   void debug(const PageRect &rect,float xpos,float ypos);
 private:
+  bool isExisting() const;
+  QPDFObjectHandle get(); // only once!
+private:
   friend class QPDF_PDFTOPDF_Processor;
   // 1st mode: existing
   QPDF_PDFTOPDF_PageHandle(QPDFObjectHandle page,int orig_no=-1);
@@ -43,9 +46,6 @@ private:
   QPDF_PDFTOPDF_PageHandle(QPDF *pdf,float width,float height);
   std::map<std::string,QPDFObjectHandle> xobjs;
   std::string content;
-private:
-  bool isExisting() const;
-  QPDFObjectHandle get(); // only once!
 };
 
 class QPDF_PDFTOPDF_Processor : public PDFTOPDF_Processor {

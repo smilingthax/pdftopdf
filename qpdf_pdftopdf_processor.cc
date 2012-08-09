@@ -79,9 +79,42 @@ QPDFObjectHandle QPDF_PDFTOPDF_PageHandle::get() // {{{
 }
 // }}}
 
-// TODO TODO FIXME
+// TODO? for non-existing (either drop comment or facility to create split streams needed)
 void QPDF_PDFTOPDF_PageHandle::add_border_rect(const PageRect &rect,BorderType border) // {{{
 {
+  assert(isExisting());
+  static const char *pre="%pdftopdf q\n"
+                         "q\n",
+                    *post="%pdftopdf Q\n"
+                          "Q\n";
+
+  std::string boxcmd="q 1 w 0.1 G \n 10 10 100 100 re S \nQ\n";
+
+// if (!isExisting()) {
+//   // TODO: only after 
+//   return;
+// }
+
+  std::vector<QPDFObjectHandle> cntnt=page.getPageContents();
+  if (cntnt.size()>=3) {
+    // check cntnt.front() and cntnt.back()
+    PointerHolder<Buffer> pbuf_f=cntnt.front().getStreamData();
+    PointerHolder<Buffer> pbuf_b=cntnt.back().getStreamData();
+    if ( (pbuf_f->getSize()>12)&&(strncmp((char *)pbuf_f->getBuffer(),pre,12)==0)&& 
+         (pbuf_b->getSize()>12)&&(strncmp((char *)pbuf_b->getBuffer(),post,12)==0) ) {
+      // leave "stm1" alone, replace stm2
+      cntnt.back().replaceStreamData(std::string(post)+boxcmd,QPDFObjectHandle::newNull(),QPDFObjectHandle::newNull());
+      boxcmd.clear();
+    }
+  }
+  if (!boxcmd.empty()) {
+    assert(page.getOwningQPDF()); // existing pages are always indirect
+    QPDFObjectHandle stm1=QPDFObjectHandle::newStream(page.getOwningQPDF(),pre),
+                     stm2=QPDFObjectHandle::newStream(page.getOwningQPDF(),std::string(post)+boxcmd);
+
+    page.addPageContents(stm1,true); // before
+    page.addPageContents(stm2,false); // after
+  }
 }
 // }}}
 
