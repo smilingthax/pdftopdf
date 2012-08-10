@@ -5,6 +5,7 @@
 #include <qpdf/Pl_Count.hh>
 #include <qpdf/Pl_Concatenate.hh>
 #include "qpdf_tools.h"
+#include "qpdf_pdftopdf.h"
 
 // TODO: need to remove  Struct Parent stuff  (or fix)
 
@@ -89,12 +90,21 @@ QPDFObjectHandle makeXObject(QPDF *pdf,QPDFObjectHandle page)
   dict.replaceKey("/Subtype",QPDFObjectHandle::newName("/Form")); // required
 //  dict.replaceKey("/FormType",QPDFObjectHandle::newInteger(1)); // optional
 
-// TODO: page.getKey("/Rotate")
-// TODO: page.getKey("/UserUnit")
 // [/Matrix .]   ...  default is [1 0 0 1 0 0] ---    also incorporate /UserUnit here?!
-// FIXME: transform by /Matrix?
+  Matrix mtx;
+  if (page.hasKey("/UserUnit")) {
+    mtx.scale(page.getKey("/UserUnit").getNumericValue());
+  }
+  Rotation rot=getRotate(page);
+  mtx.rotate(rot);
 
-  dict.replaceKey("/BBox",getTrimBox(page)); // reqd
+  // transform, so that bbox is [0 0 w h]  (in form space)
+  PageRect bbox=getBoxAsRect(getTrimBox(page));
+  mtx.translate(-bbox.left,-bbox.top);  // we want it undone
+
+  dict.replaceKey("/BBox",makeBox(0,0,bbox.width,bbox.height)); // reqd
+
+  dict.replaceKey("/Matrix",mtx.get());
 
   dict.replaceKey("/Resources",page.getKey("/Resources"));
   if (page.hasKey("/Group")) {

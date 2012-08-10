@@ -504,7 +504,7 @@ void parseOpts(int argc, char **argv)
   // check OutputOrder device
   if (P2PDoc::options.reverse) {
     if (ppdFindOption(ppd,"OutputOrder") != NULL) {
-      deviceReverse = gTrue;
+      deviceReverse = gTrue;  // i.e. also param.reverse=false; !!
     }
   }
 

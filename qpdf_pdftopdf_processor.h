@@ -30,6 +30,7 @@ public:
   virtual PageRect getRect() const;
   virtual void add_border_rect(const PageRect &rect,BorderType border);
   virtual void add_subpage(const std::shared_ptr<PDFTOPDF_PageHandle> &sub,float xpos,float ypos,float scale);
+  virtual void mirror();
 
   void debug(const PageRect &rect,float xpos,float ypos);
 private:
@@ -62,6 +63,8 @@ public:
   virtual std::shared_ptr<PDFTOPDF_PageHandle> new_page(float width,float height);
 
   virtual void add_page(std::shared_ptr<PDFTOPDF_PageHandle> page,bool front);
+
+  virtual void multiply(int copies);
 
   virtual void emitFile(FILE *dst,ArgOwnership take=WillStayAlive);
   virtual void emitFilename(const char *name);

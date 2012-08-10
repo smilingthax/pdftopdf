@@ -92,6 +92,7 @@ public:
   virtual PageRect getRect() const =0;
   virtual void add_border_rect(const PageRect &rect,BorderType border) =0;
   virtual void add_subpage(const std::shared_ptr<PDFTOPDF_PageHandle> &sub,float xpos,float ypos,float scale) =0; // or simply: const NupPageEdit &edit
+  virtual void mirror() =0;
 };
 
 // TODO: ... error output?
@@ -116,6 +117,8 @@ public:
   virtual void add_page(std::shared_ptr<PDFTOPDF_PageHandle> page,bool front) =0; // at back/front -- either from get_pages() or new_page()+add_subpage()-calls  (or [also allowed]: empty)
 
 //  void remove_page(std::shared_ptr<PDFTOPDF_PageHandle> ph);  // not needed: we construct from scratch, at least conceptually.
+
+  virtual void multiply(int copies) =0;
 
   virtual void emitFile(FILE *dst,ArgOwnership take=WillStayAlive) =0;
   virtual void emitFilename(const char *name) =0; // NULL -> stdout

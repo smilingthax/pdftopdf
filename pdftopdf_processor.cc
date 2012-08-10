@@ -114,7 +114,10 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,const ProcessingParameters &param)
     bool newPage=nupstate.nextPage(rect.width,rect.height,pgedit);
 //    printf("%d\n",newPage);
     if (newPage) {
-      if (param.withPage(outputno)) { 
+      if (param.withPage(outputno)) {
+        if ( (curpage)&&(param.mirror) ) {
+          curpage->mirror();
+        }
         proc.add_page(curpage,param.reverse); // empty will just no-op;  reverse -> insert at beginning
       }
       outputno++;
@@ -133,12 +136,24 @@ pages[iA]->add_border_rect(rect,param.border);
 //    pgedit.dump();
   }
   if (param.withPage(outputno)) { 
+    if ( (curpage)&&(param.mirror) ) {
+      curpage->mirror();
+    }
     proc.add_page(curpage,param.reverse); // empty will just no-op;  reverse -> insert at beginning
   }
+
+  if (param.evenDuplex) {
+    // need to output empty page to not confuse duplex
+    proc.add_page(proc.new_page(param.page.width,param.page.height),param.reverse);
+  }
+
 /*
 
   ..
   .
+
+  // TODO: copies (w/ collate ...)
+  proc.multiply(params.numCopies);
 */
 fprintf(stderr,"TODO setProcess\n");
 //  ...

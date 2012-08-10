@@ -55,7 +55,9 @@ QPDF_PDFTOPDF_PageHandle::QPDF_PDFTOPDF_PageHandle(QPDF *pdf,float width,float h
 PageRect QPDF_PDFTOPDF_PageHandle::getRect() const // {{{
 {
   page.assertInitialized();
-  return getBoxAsRect(getTrimBox(page));
+  PageRect ret=getBoxAsRect(getTrimBox(page));
+  ret.rotate(getRotate(page));
+  return ret;
 }
 // }}}
 
@@ -79,6 +81,7 @@ QPDFObjectHandle QPDF_PDFTOPDF_PageHandle::get() // {{{
 }
 // }}}
 
+  // TODO: factor out pre- and post-   ... also needed by mirror()!
 // TODO? for non-existing (either drop comment or facility to create split streams needed)
 void QPDF_PDFTOPDF_PageHandle::add_border_rect(const PageRect &rect,BorderType border) // {{{
 {
@@ -135,7 +138,6 @@ void QPDF_PDFTOPDF_PageHandle::add_subpage(const std::shared_ptr<PDFTOPDF_PageHa
   std::string xoname="/X"+QUtil::int_to_string((qsub->no!=-1)?qsub->no:++no);
   xobjs[xoname]=makeXObject(qsub->page.getOwningQPDF(),qsub->page); // trick: should be the same as page->getOwningQPDF() [only after made indirect]
 
-// TODO: -left/-right needs to be added back? (here?)
   content.append("q\n  ");
   content.append(QUtil::double_to_string(scale)+" 0 0 "+
                  QUtil::double_to_string(scale)+" "+
@@ -143,6 +145,32 @@ void QPDF_PDFTOPDF_PageHandle::add_subpage(const std::shared_ptr<PDFTOPDF_PageHa
                  QUtil::double_to_string(ypos)+" cm\n  ");
   content.append(xoname+" Do\n");
   content.append("Q\n");
+}
+// }}} 
+
+// TODO? test
+void QPDF_PDFTOPDF_PageHandle::mirror() // {{{
+{
+  if (isExisting()) {
+    // need to wrap in XObject to keep patterns correct
+    // TODO? refactor into internal ..._subpage fn ?
+    std::string xoname="/X"+QUtil::int_to_string(no);
+    xobjs[xoname]=makeXObject(page.getOwningQPDF(),page);
+
+    content.append("q\n  ");
+//    content.append(std::string("1 0 0 1 0 0 cm\n  ");
+    content.append(xoname+" Do\n");
+    // "Q\n" added by get()
+    assert(!isExisting());
+  }
+
+  static const char *pre="%pdftopdf cm\n";
+  // Note: we don't change (TODO need to?) the media box
+  std::string mrcmd("-1 0 0 1 "+ 
+                    QUtil::double_to_string(-getRect().right)+" 0 cm\n");
+
+  QPDFObjectHandle stm=QPDFObjectHandle::newStream(page.getOwningQPDF(),std::string(pre)+mrcmd);
+  page.addPageContents(stm,true); // before
 }
 // }}}
 
@@ -233,6 +261,7 @@ void QPDF_PDFTOPDF_Processor::start() // {{{
 {
   assert(pdf);
 
+  pdf->pushInheritedAttributesToPage();
   orig_pages=pdf->getAllPages();
 
   // remove them (just unlink, data still there)
@@ -388,6 +417,23 @@ return true;
 }
 // }}}
 #endif
+
+// TODO? test
+void QPDF_PDFTOPDF_Processor::multiply(int copies) // {{{
+{
+  assert(pdf);
+  assert(copies>0); 
+
+  std::vector<QPDFObjectHandle> pages=pdf->getAllPages();
+  const int len=pages.size();
+
+  for (int iA=1;iA<copies;iA++) {
+    for (int iB=0;iB<len;iB++) {
+      pdf->addPage(pages[iB].shallowCopy(),false);
+    }
+  }
+}
+// }}}
 
 void QPDF_PDFTOPDF_Processor::emitFile(FILE *f,ArgOwnership take) // {{{
 {

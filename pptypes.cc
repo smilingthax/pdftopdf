@@ -68,7 +68,8 @@ void PageRect::rotate(Rotation r) // {{{
     left=top;
     top=right;
     right=tmp;
-    // TODO? std::swap(width,height);
+
+    std::swap(width,height);
   }
 }
 // }}}
