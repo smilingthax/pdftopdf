@@ -103,6 +103,8 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,const ProcessingParameters &param)
   std::shared_ptr<PDFTOPDF_PageHandle> curpage;
   int outputno=0;
 
+  // TODO: if (!fitplot)&&(nupX==1)&&(nupY==1)   // see main()
+
   double xpos=param.page.left,
          ypos=param.page.bottom; // for whole page... TODO from position...
   NupState nupstate(param.nup);
@@ -126,7 +128,7 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,const ProcessingParameters &param)
 
 // TODO: add frame, possibly already to original page?
 // TODO? -left/-right needs to be added back?
-pages[iA]->add_border_rect(rect,param.border);
+pages[iA]->add_border_rect(rect,param.border,pgedit.scale);
     curpage->add_subpage(pages[iA],pgedit.xpos+xpos,pgedit.ypos+ypos,pgedit.scale);
 
     if (auto dbg=dynamic_cast<QPDF_PDFTOPDF_PageHandle *>(curpage.get())) {

@@ -86,8 +86,9 @@ QPDFObjectHandle QPDF_PDFTOPDF_PageHandle::get() // {{{
 // }}}
 
   // TODO: factor out pre- and post-   ... also needed by mirror()!
+// TODO: add TWO, etc.; remove detection(?)
 // TODO? for non-existing (either drop comment or facility to create split streams needed)
-void QPDF_PDFTOPDF_PageHandle::add_border_rect(const PageRect &rect,BorderType border) // {{{
+void QPDF_PDFTOPDF_PageHandle::add_border_rect(const PageRect &rect,BorderType border,float fscale) // {{{
 {
   assert(isExisting());
   static const char *pre="%pdftopdf q\n"

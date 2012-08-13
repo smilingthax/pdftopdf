@@ -90,7 +90,7 @@ class PDFTOPDF_PageHandle {
 public:
   virtual ~PDFTOPDF_PageHandle() {}
   virtual PageRect getRect() const =0;
-  virtual void add_border_rect(const PageRect &rect,BorderType border) =0;
+  virtual void add_border_rect(const PageRect &rect,BorderType border,float fscale) =0;
   virtual void add_subpage(const std::shared_ptr<PDFTOPDF_PageHandle> &sub,float xpos,float ypos,float scale) =0; // or simply: const NupPageEdit &edit
   virtual void mirror() =0;
   virtual void rotate(Rotation rot) =0;
