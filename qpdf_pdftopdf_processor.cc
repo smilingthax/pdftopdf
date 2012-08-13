@@ -48,7 +48,7 @@ QPDF_PDFTOPDF_PageHandle::QPDF_PDFTOPDF_PageHandle(QPDF *pdf,float width,float h
   // xobjects: later (in get())
   content.assign("q\n");  // TODO? different/not needed
 
-//  page=pdf->makeIndirectObject(page); // stores *pdf 
+  page=pdf->makeIndirectObject(page); // stores *pdf 
 }
 // }}}
 
@@ -75,6 +75,10 @@ QPDFObjectHandle QPDF_PDFTOPDF_PageHandle::get() // {{{
     page.getKey("/Resources").replaceKey("/XObject",QPDFObjectHandle::newDictionary(xobjs));
     content.append("Q\n");
     page.getKey("/Contents").replaceStreamData(content,QPDFObjectHandle::newNull(),QPDFObjectHandle::newNull());
+    page.replaceOrRemoveKey("/Rotate",makeRotate(rotation));
+  } else {
+    Rotation rot=getRotate(page)+rotation;
+    page.replaceOrRemoveKey("/Rotate",makeRotate(rot));
   }
   page=QPDFObjectHandle(); // i.e. uninitialized
   return ret;
@@ -148,29 +152,36 @@ void QPDF_PDFTOPDF_PageHandle::add_subpage(const std::shared_ptr<PDFTOPDF_PageHa
 }
 // }}} 
 
-// TODO? test
 void QPDF_PDFTOPDF_PageHandle::mirror() // {{{
 {
+  PageRect orig=getRect();
+
   if (isExisting()) {
     // need to wrap in XObject to keep patterns correct
     // TODO? refactor into internal ..._subpage fn ?
     std::string xoname="/X"+QUtil::int_to_string(no);
     xobjs[xoname]=makeXObject(page.getOwningQPDF(),page);
 
-    content.append("q\n  ");
+    *this=QPDF_PDFTOPDF_PageHandle(page.getOwningQPDF(),orig.width,orig.height);
+
 //    content.append(std::string("1 0 0 1 0 0 cm\n  ");
     content.append(xoname+" Do\n");
-    // "Q\n" added by get()
+
     assert(!isExisting());
   }
 
   static const char *pre="%pdftopdf cm\n";
   // Note: we don't change (TODO need to?) the media box
   std::string mrcmd("-1 0 0 1 "+ 
-                    QUtil::double_to_string(-getRect().right)+" 0 cm\n");
+                    QUtil::double_to_string(orig.right)+" 0 cm\n");
 
-  QPDFObjectHandle stm=QPDFObjectHandle::newStream(page.getOwningQPDF(),std::string(pre)+mrcmd);
-  page.addPageContents(stm,true); // before
+  content.insert(0,std::string(pre)+mrcmd);
+}
+// }}}
+
+void QPDF_PDFTOPDF_PageHandle::rotate(Rotation rot) // {{{
+{
+  rotation=rot; // "rotation += rot;" ?
 }
 // }}}
 
@@ -329,93 +340,11 @@ void QPDF_PDFTOPDF_Processor::add_page(std::shared_ptr<PDFTOPDF_PageHandle> page
 // }}}
 
 #if 0
-bool QPDF_PDFTOPDF_Processor::setProcess(const ProcessingParameters &param) // {{{
-{
-  if (!pdf) {
-    error("No PDF loaded");
-    return false;
-  }
-
-// TODO: -left/-right needs to be subtracted from param.nup.width/height
-
-  // make copy
-  std::vector<QPDFObjectHandle> pages=pdf->getAllPages();
-  const int numPages=pages.size();
-
-  std::map<std::string,QPDFObjectHandle> xobjs;
-  std::string content;
-
-  double xpos=param.page.left,
-         ypos=param.page.bottom; // for whole page... TODO from position...
-  NupState nupstate(param.nup);
-  NupPageEdit pe;
-  for (int iA=0;iA<numPages;iA++) {
-//    QPDFObjectHandle box=getTrimBox(pages[iA]);
-    PageRect rect=getBoxAsRect(getTrimBox(pages[iA]));
-//    rect.dump();
-
-    bool newPage=nupstate.nextPage(rect.width,rect.height,pe);
-//    printf("%d\n",newPage);
-    if ( (newPage)&&(!content.empty()) ) {
-//      auto npage=makePage(*pdf,xobjs,getRectAsBox(param.page),content);
-      auto npage=makePage(*pdf,xobjs,makeBox(0,0,param.page.width,param.page.height),content);
-      pdf->addPage(npage,false);
-
-      content.clear();
-      xobjs.clear();
-    }
-
-// TODO: add frame, possibly already to original page?
-    std::string xoname="/X"+QUtil::int_to_string(iA+1);
-    xobjs[xoname]=makeXObject(pdf,pages[iA]);
-    pdf->removePage(pages[iA]);
-
-// TODO: -left/-right needs to be added back?
-    content.append("q\n  ");
-    content.append(QUtil::double_to_string(pe.scale)+" 0 0 "+
-                   QUtil::double_to_string(pe.scale)+" "+
-                   QUtil::double_to_string(pe.xpos+xpos)+" "+
-                   QUtil::double_to_string(pe.ypos+ypos)+" cm\n  ");
-    content.append(xoname+" Do\n");
-    content.append("Q\n");
-#if 1
-content.append(
-  "q 1 w 0.1 G\n "+
-  QUtil::double_to_string(pe.sub.left+xpos)+" "+QUtil::double_to_string(pe.sub.top+ypos)+" m  "+
-  QUtil::double_to_string(pe.sub.right+xpos)+" "+QUtil::double_to_string(pe.sub.bottom+ypos)+" l "+"S \n "+
-
-  QUtil::double_to_string(pe.sub.right+xpos)+" "+QUtil::double_to_string(pe.sub.top+ypos)+" m  "+
-  QUtil::double_to_string(pe.sub.left+xpos)+" "+QUtil::double_to_string(pe.sub.bottom+ypos)+" l "+"S \n "+
-
-  QUtil::double_to_string(pe.sub.left+xpos)+" "+QUtil::double_to_string(pe.sub.top+ypos)+"  "+
-  QUtil::double_to_string(pe.sub.right-pe.sub.left)+" "+QUtil::double_to_string(pe.sub.bottom-pe.sub.top)+" re "+"S Q\n");
-#endif
-
-//    pe.dump();
-  }
-  if (!content.empty()) {
-//    auto npage=makePage(*pdf,xobjs,getRectAsBox(param.page),content);
-    auto npage=makePage(*pdf,xobjs,makeBox(0,0,param.page.width,param.page.height),content);
-    pdf->addPage(npage,false);
-  }
-/*
-
-  ..
-  .
-*/
-error("TODO setProcess");
-//  ...
-
   // we remove stuff now probably defunct  TODO
   pdf->getRoot().removeKey("/PageMode");
   pdf->getRoot().removeKey("/Outlines");
   pdf->getRoot().removeKey("/OpenAction");
   pdf->getRoot().removeKey("/PageLabels");
-
-return true;
-  return false;
-}
-// }}}
 #endif
 
 // TODO? test

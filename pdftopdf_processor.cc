@@ -152,9 +152,10 @@ pages[iA]->add_border_rect(rect,param.border);
   ..
   .
 
-  // TODO: copies (w/ collate ...)
-  proc.multiply(params.numCopies);
 */
+  // TODO: copies (w/ collate ...)
+  proc.multiply(param.numCopies);
+
 fprintf(stderr,"TODO setProcess\n");
 //  ...
 

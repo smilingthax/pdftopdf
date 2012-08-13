@@ -65,7 +65,7 @@ void setFinalPPD(ppd_file_t *ppd,const ProcessingParameters &param)
     choice->marked=0;
   }
 
-  // hardware can't collate the way we want it. Thus we collate, printer shall not
+  // hardware can't collate the way we want it. Thus we collate; printer shall not
   if (param.unsetCollate) {
     ppdMarkOption(ppd,"Collate","False");
   }
@@ -301,7 +301,7 @@ void calculate(ppd_file_t *ppd,int num_options,cups_option_t *options,Processing
   int ipprot;
   param.orientation=ROT_0;
   if ( (val=cupsGetOption("landscape",num_options,options)) != NULL) {
-    if (is_false(val)) {
+    if (!is_false(val)) {
       if ( (ppd)&&(ppd->landscape>0) ) { // direction the printer rotates landscape (90 or -90)
         param.orientation=ROT_90;
       } else {
@@ -363,7 +363,7 @@ void calculate(ppd_file_t *ppd,int num_options,cups_option_t *options,Processing
       error("Unsupported number-up value %d, using number-up=1!",nup);
       nup=1;
     }
-// TODO   ;  TODO? nup enabled?
+// TODO   ;  TODO? nup enabled? ... fitplot
     param.nup.nupX=nup;
     param.nup.nupY=1;
 //    NupParameters::calculate(nup,param.nup);
@@ -606,10 +606,20 @@ std::unique_ptr<PDFTOPDF_Processor> proc1(PDFTOPDF_Factory::processor());
 // param.nup.calculate(4,0.707,0.707,param.nup);
   param.nup.nupX=2;
   param.nup.nupY=2;
-  param.nup.width=param.page.right-param.page.left;
-  param.nup.height=param.page.top-param.page.bottom;
-param.nup.yalign=TOP;
+/*
+*/
+//param.nup.yalign=TOP;
+  if ( (param.nup.nupX==1)&&(param.nup.nupY==1)&&(!param.fitplot) ) {
+    param.nup.width=param.page.width;
+    param.nup.height=param.page.height;
+  } else {
+    param.nup.width=param.page.right-param.page.left;
+    param.nup.height=param.page.top-param.page.bottom;
+  }
 param.border=BorderType::ONE;
+//param.mirror=true;
+//param.reverse=true;
+//param.numCopies=3;
 if (!proc1->loadFilename("in.pdf")) return 2;
     param.dump();
 if (!processPDFTOPDF(*proc1,param)) return 3;

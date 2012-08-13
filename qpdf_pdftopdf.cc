@@ -1,5 +1,6 @@
 #include "qpdf_pdftopdf.h"
 #include <assert.h>
+#include <stdexcept>
 
 PageRect getBoxAsRect(QPDFObjectHandle box) // {{{
 {
@@ -36,6 +37,21 @@ Rotation getRotate(QPDFObjectHandle page) // {{{
 }
 // }}}
 
+QPDFObjectHandle makeRotate(Rotation rot) // {{{
+{
+  switch (rot) {
+  case ROT_0:
+    return QPDFObjectHandle::newNull();
+  case ROT_90:
+  case ROT_180:
+  case ROT_270:
+    return QPDFObjectHandle::newInteger(rot*90);
+  default:
+    throw std::invalid_argument("Bad rotation");
+  }
+}
+// }}}
+
 #include "qpdf_tools.h"
 
 QPDFObjectHandle getRectAsBox(const PageRect &rect) // {{{
@@ -44,7 +60,6 @@ QPDFObjectHandle getRectAsBox(const PageRect &rect) // {{{
 }
 // }}}
 
-#include <stdexcept>
 
 Matrix::Matrix() // {{{
   : ctm({1,0,0,1,0,0})

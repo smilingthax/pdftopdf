@@ -10,6 +10,7 @@ PageRect getBoxAsRect(QPDFObjectHandle box);
 QPDFObjectHandle getRectAsBox(const PageRect &rect);
 
 Rotation getRotate(QPDFObjectHandle page);
+QPDFObjectHandle makeRotate(Rotation rot); // int
 
 // PDF CTM
 class Matrix {

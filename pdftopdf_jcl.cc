@@ -128,7 +128,7 @@ void emitPreamble(ppd_file_t *ppd,const ProcessingParameters &param) // {{{
        printer and the PPD is for this mode, having the "*JCLToPDFInterpreter:"
        keyword. We need to read this keyword manually from the PPD and replace
        the content of ppd->jcl_ps by the value of this keyword, so that
-       ppdEmitJCL() actalually adds JCL based on the presence on 
+       ppdEmitJCL() actually adds JCL based on the presence on 
        "*JCLToPDFInterpreter:". */
     ppd_attr_t *attr;
     if ( (attr=ppdFindAttr(ppd,"JCLToPDFInterpreter",NULL)) != NULL) {

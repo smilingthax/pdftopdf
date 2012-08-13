@@ -43,6 +43,18 @@ void Rotation_dump(Rotation rot) // {{{
 }
 // }}}
 
+Rotation operator+(Rotation lhs,Rotation rhs) // {{{
+{
+  return (Rotation)((lhs+rhs)%4);
+}
+// }}}
+
+Rotation operator-(Rotation lhs,Rotation rhs) // {{{
+{
+  return (Rotation)(((lhs-rhs)%4+4)%4);
+}
+// }}}
+
 
 void BorderType_dump(BorderType border) // {{{
 {

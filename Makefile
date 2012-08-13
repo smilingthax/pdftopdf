@@ -1,4 +1,4 @@
-SOURCES=pdftopdf.cc pdftopdf_jcl.cc pdftopdf_processor.cc qpdf_pdftopdf_processor.cc pptypes.cc nup.cc intervalset.cc qpdf_tools.cc qpdf_xobject.cc qpdf_pdftopdf.cc
+SOURCES=pdftopdf.cc pdftopdf_jcl.cc pdftopdf_processor.cc qpdf_pdftopdf_processor.cc pptypes.cc nup.cc intervalset.cc qpdf_tools.cc qpdf_xobject.cc qpdf_pdftopdf.cc qpdf_cm.cc
 EXEC=pt
 
 #CXX=/home/thobi/dls/gstlfilt/gfilt

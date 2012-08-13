@@ -31,6 +31,7 @@ public:
   virtual void add_border_rect(const PageRect &rect,BorderType border);
   virtual void add_subpage(const std::shared_ptr<PDFTOPDF_PageHandle> &sub,float xpos,float ypos,float scale);
   virtual void mirror();
+  virtual void rotate(Rotation rot);
 
   void debug(const PageRect &rect,float xpos,float ypos);
 private:
@@ -47,6 +48,8 @@ private:
   QPDF_PDFTOPDF_PageHandle(QPDF *pdf,float width,float height);
   std::map<std::string,QPDFObjectHandle> xobjs;
   std::string content;
+
+  Rotation rotation;
 };
 
 class QPDF_PDFTOPDF_Processor : public PDFTOPDF_Processor {
