@@ -666,6 +666,19 @@ proc1->emitFilename("out.pdf");
     }
   }
 
+/* TODO
+  // color management
+--- PPD:
+    copyPPDLine_(fp_dest, fp_src, "*PPD-Adobe: "); 
+    copyPPDLine_(fp_dest, fp_src, "*cupsICCProfile ");  
+    copyPPDLine_(fp_dest, fp_src, "*Manufacturer:");
+    copyPPDLine_(fp_dest, fp_src, "*ColorDevice:");
+    copyPPDLine_(fp_dest, fp_src, "*DefaultColorSpace:");  
+  if (cupsICCProfile) {
+    proc.addCM(...,...);
+  }
+*/
+
   if (!processPDFTOPDF(*proc,param)) {
     ppdClose(ppd);
     return 2;

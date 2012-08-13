@@ -363,6 +363,24 @@ void QPDF_PDFTOPDF_Processor::multiply(int copies) // {{{
   }
 }
 // }}}
+ 
+#include "qpdf_cm.h"
+
+// TODO
+void QPDF_PDFTOPDF_Processor::addCM(const char *defaulticc,const char *outputicc) // {{{
+{
+  assert(pdf);
+
+  if (hasOutputIntent(*pdf)) {
+    return; // nothing to do
+  }
+
+  QPDFObjectHandle srcicc=setDefaultICC(*pdf,defaulticc);
+  addDefaultRGB(*pdf,srcicc);
+
+  addOutputIntent(*pdf,outputicc);
+}
+// }}}
 
 void QPDF_PDFTOPDF_Processor::emitFile(FILE *f,ArgOwnership take) // {{{
 {

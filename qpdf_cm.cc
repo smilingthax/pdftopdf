@@ -101,9 +101,9 @@ void addOutputIntent(QPDF &pdf,const char *filename) // {{{
 */
 
 // TODO? test
-void addDefaultRGB(QPDF &pdf,QPDFObjectHandle dsticc) // {{{
+void addDefaultRGB(QPDF &pdf,QPDFObjectHandle srcicc) // {{{
 {
-  dsticc.assertStream();
+  srcicc.assertStream();
 
   auto pages=pdf.getAllPages();
   for (auto it=pages.begin(),end=pages.end();it!=end;++it) {
@@ -119,7 +119,7 @@ void addDefaultRGB(QPDF &pdf,QPDFObjectHandle dsticc) // {{{
 
     if (!cdict.hasKey("/DefaultRGB")) {
       cdict.replaceKey("/DefaultRGB",QPDFObjectHandle::parse("[/ICCBased ]"));
-      cdict.getKey("/DefaultRGB").appendItem(dsticc);
+      cdict.getKey("/DefaultRGB").appendItem(srcicc);
     }
   }
 }

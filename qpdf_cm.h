@@ -6,7 +6,7 @@
 bool hasOutputIntent(QPDF &pdf);
 void addOutputIntent(QPDF &pdf,const char *filename);
 
-void addDefaultRGB(QPDF &pdf,QPDFObjectHandle dsticc);
+void addDefaultRGB(QPDF &pdf,QPDFObjectHandle srcicc);
 QPDFObjectHandle setDefaultICC(QPDF &pdf,const char *filename);
 
 #endif

@@ -121,6 +121,8 @@ public:
 
   virtual void multiply(int copies) =0;
 
+  virtual void addCM(const char *defaulticc,const char *outputicc) =0;
+
   virtual void emitFile(FILE *dst,ArgOwnership take=WillStayAlive) =0;
   virtual void emitFilename(const char *name) =0; // NULL -> stdout
 };

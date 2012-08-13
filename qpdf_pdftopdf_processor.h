@@ -69,6 +69,8 @@ public:
 
   virtual void multiply(int copies);
 
+  virtual void addCM(const char *defaulticc,const char *outputicc);
+
   virtual void emitFile(FILE *dst,ArgOwnership take=WillStayAlive);
   virtual void emitFilename(const char *name);
 
@@ -79,6 +81,8 @@ private:
 private:
   std::unique_ptr<QPDF> pdf;
   std::vector<QPDFObjectHandle> orig_pages;
+
+  bool hasCM;
 };
 
 #endif
