@@ -78,9 +78,9 @@ QPDFObjectHandle QPDF_PDFTOPDF_PageHandle::get() // {{{
     page.getKey("/Resources").replaceKey("/XObject",QPDFObjectHandle::newDictionary(xobjs));
     content.append("Q\n");
     page.getKey("/Contents").replaceStreamData(content,QPDFObjectHandle::newNull(),QPDFObjectHandle::newNull());
-    page.replaceOrRemoveKey("/Rotate",makeRotate(rotation));
+    page.replaceOrRemoveKey("/Rotate",makeRotate(-rotation));
   } else {
-    Rotation rot=getRotate(page)+rotation;
+    Rotation rot=getRotate(page)-rotation;
     page.replaceOrRemoveKey("/Rotate",makeRotate(rot));
   }
   page=QPDFObjectHandle(); // i.e. uninitialized
@@ -134,19 +134,22 @@ void QPDF_PDFTOPDF_PageHandle::add_border_rect(const PageRect &rect,BorderType b
 }
 // }}}
 
+// TODO: test rotation
 void QPDF_PDFTOPDF_PageHandle::add_subpage(const std::shared_ptr<PDFTOPDF_PageHandle> &sub,float xpos,float ypos,float scale) // {{{
 {
   auto qsub=dynamic_cast<QPDF_PDFTOPDF_PageHandle *>(sub.get());
   assert(qsub);
 
   std::string xoname="/X"+QUtil::int_to_string((qsub->no!=-1)?qsub->no:++no);
-  xobjs[xoname]=makeXObject(qsub->page.getOwningQPDF(),qsub->page); // trick: should be the same as page->getOwningQPDF() [only after made indirect]
+  xobjs[xoname]=makeXObject(qsub->page.getOwningQPDF(),qsub->page); // trick: should be the same as page->getOwningQPDF() [only after it's made indirect]
+
+  Matrix mtx;
+  mtx.translate(xpos,ypos);
+  mtx.scale(scale);
+  mtx.rotate(qsub->rotation); // TODO? -sub.rotation ?
 
   content.append("q\n  ");
-  content.append(QUtil::double_to_string(scale)+" 0 0 "+
-                 QUtil::double_to_string(scale)+" "+
-                 QUtil::double_to_string(xpos)+" "+
-                 QUtil::double_to_string(ypos)+" cm\n  ");
+  content.append(mtx.get_string()+" cm\n  ");
   content.append(xoname+" Do\n");
   content.append("Q\n");
 }
@@ -348,18 +351,26 @@ void QPDF_PDFTOPDF_Processor::add_page(std::shared_ptr<PDFTOPDF_PageHandle> page
   pdf->getRoot().removeKey("/PageLabels");
 #endif
 
-// TODO? test
-void QPDF_PDFTOPDF_Processor::multiply(int copies) // {{{
+// TODO FIXME: not collated
+void QPDF_PDFTOPDF_Processor::multiply(int copies,bool collate) // {{{
 {
   assert(pdf);
   assert(copies>0); 
 
-  std::vector<QPDFObjectHandle> pages=pdf->getAllPages();
+  std::vector<QPDFObjectHandle> pages=pdf->getAllPages(); // need copy
   const int len=pages.size();
 
-  for (int iA=1;iA<copies;iA++) {
+  if (collate) {
+    for (int iA=1;iA<copies;iA++) {
+      for (int iB=0;iB<len;iB++) {
+        pdf->addPage(pages[iB].shallowCopy(),false);
+      }
+    }
+  } else {
     for (int iB=0;iB<len;iB++) {
-      pdf->addPage(pages[iB].shallowCopy(),false);
+      for (int iA=1;iA<copies;iA++) {
+        pdf->addPage(pages[iB].shallowCopy(),false);
+      }
     }
   }
 }

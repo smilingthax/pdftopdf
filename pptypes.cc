@@ -51,7 +51,13 @@ Rotation operator+(Rotation lhs,Rotation rhs) // {{{
 
 Rotation operator-(Rotation lhs,Rotation rhs) // {{{
 {
-  return (Rotation)(((lhs-rhs)%4+4)%4);
+  return (Rotation)((((int)lhs-(int)rhs)%4+4)%4);
+}
+// }}}
+
+Rotation operator-(Rotation rhs) // {{{
+{
+  return (Rotation)((4-(int)rhs)%4);
 }
 // }}}
 

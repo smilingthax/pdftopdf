@@ -112,11 +112,13 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
       if (!param.withPage(iA+1)) {
         continue;
       }
+
+      pages[iA]->rotate(param.orientation);
+
       if (param.mirror) {
-        curpage->mirror();
+        pages[iA]->mirror();
       }
 
-      // TODO?! pstops uses  output rect?!
       // place border
       if (param.border!=BorderType::NONE) {
 #if 0 // would be nice, but is not possible
@@ -128,13 +130,14 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
         rect.right-=param.page.right;
         // width,height not needed for add_border_rect (FIXME?)
         pages[iA]->add_border_rect(rect,param.border,1.0); 
-#else
+#else // this is what pstops does
         pages[iA]->add_border_rect(param.page,param.border,1.0); 
 #endif
       }
 
       proc.add_page(pages[iA],param.reverse); // reverse -> insert at beginning
     }
+    outputno=numPages;
   } else {
 // TODO... -left/-right needs to be subtracted from param.nup.width/height
     param.nup.width=param.page.right-param.page.left;
@@ -142,6 +145,14 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
 
     double xpos=param.page.left,
            ypos=param.page.bottom; // for whole page... TODO from position...
+
+    if (param.nup.landscape) {
+//      pages[iA]->rotate(param.normal_landscape);
+      param.orientation=param.orientation+param.normal_landscape;
+      // TODO? better
+      std::swap(param.page.width,param.page.height);
+      std::swap(param.nup.width,param.nup.height);
+    }
 
     NupState nupstate(param.nup);
     NupPageEdit pgedit;
@@ -151,12 +162,13 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
 
       bool newPage=nupstate.nextPage(rect.width,rect.height,pgedit);
       if (newPage) {
-        if (param.withPage(outputno)) {
-          if ( (curpage)&&(param.mirror) ) {
+        if ( (param.withPage(outputno))&&(curpage) ) {
+          curpage->rotate(param.orientation);
+          if (param.mirror) {
             curpage->mirror();
-// TODO: update rect?
+// TODO? update rect? --- not needed any more
           }
-          proc.add_page(curpage,param.reverse); // empty will just no-op;  reverse -> insert at beginning
+          proc.add_page(curpage,param.reverse); // reverse -> insert at beginning
         }
         outputno++;
         curpage=proc.new_page(param.page.width,param.page.height);
@@ -177,21 +189,22 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
 
 //      pgedit.dump();
     }
-  }
-  if (param.withPage(outputno)) {
-    if ( (curpage)&&(param.mirror) ) {
-      curpage->mirror();
+    if ( (param.withPage(outputno))&&(curpage) ) {
+      curpage->rotate(param.orientation);
+      if (param.mirror) {
+        curpage->mirror();
+      }
+      outputno++;
+      proc.add_page(curpage,param.reverse); // reverse -> insert at beginning
     }
-    proc.add_page(curpage,param.reverse); // empty will just no-op;  reverse -> insert at beginning
   }
 
-  if (param.evenDuplex) {
+  if ( (param.evenDuplex)&&(outputno&1) ) {
     // need to output empty page to not confuse duplex
     proc.add_page(proc.new_page(param.page.width,param.page.height),param.reverse);
   }
 
-  // TODO: copies (w/ collate ...)
-  proc.multiply(param.numCopies);
+  proc.multiply(param.numCopies,param.collate);
 
 //fprintf(stderr,"TODO setProcess\n");
 

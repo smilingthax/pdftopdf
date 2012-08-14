@@ -298,15 +298,18 @@ void calculate(ppd_file_t *ppd,int num_options,cups_option_t *options,Processing
 // TODO?  pstops checks =="true", pdftops !is_false
   param.fitplot=(val)&&(!is_false(val));
 
+  // TODO? elsewhere
+  if ( (ppd)&&(ppd->landscape>0) ) { // direction the printer rotates landscape (90 or -90)
+    param.normal_landscape=ROT_90;
+  } else {
+    param.normal_landscape=ROT_270;
+  }
+
   int ipprot;
   param.orientation=ROT_0;
   if ( (val=cupsGetOption("landscape",num_options,options)) != NULL) {
     if (!is_false(val)) {
-      if ( (ppd)&&(ppd->landscape>0) ) { // direction the printer rotates landscape (90 or -90)
-        param.orientation=ROT_90;
-      } else {
-        param.orientation=ROT_270;
-      }
+      param.orientation=param.normal_landscape;
     }
   } else if (optGetInt("orientation-requested",num_options,options,&ipprot)) {
     /* IPP orientation values are:
@@ -483,6 +486,9 @@ void parseOpts(int argc, char **argv)
 }
 
 /*
+  TODO:
+    force collate for duplex and not hw-collate
+
   TODO: 
 
   // check collate device
