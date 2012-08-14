@@ -88,8 +88,7 @@ QPDFObjectHandle QPDF_PDFTOPDF_PageHandle::get() // {{{
 }
 // }}}
 
-  // TODO: factor out pre- and post-   ... also needed by mirror()!
-// TODO: add TWO, etc.
+  // TODO: factor out pre- and post-   ... also needed by mirror()!(?)
 // TODO? for non-existing (either drop comment or facility to create split streams needed)
 void QPDF_PDFTOPDF_PageHandle::add_border_rect(const PageRect &rect,BorderType border,float fscale) // {{{
 {
@@ -101,15 +100,25 @@ void QPDF_PDFTOPDF_PageHandle::add_border_rect(const PageRect &rect,BorderType b
                           "Q\n";
 
 // fscale:  inverse_scale (from nup, fitplot)
-// margin:  2.25*fscale
-// line_width:  ((thick)?0.5:0.24)*fscale
+  fscale=1.0/fscale; // TODO?
+
+  // straight from pstops
+  const double lw=(border&THICK)?0.5:0.24;
+  double line_width=lw*fscale;
+  double margin=2.25*fscale;
 // (PageLeft+margin,PageBottom+margin) rect (PageRight-PageLeft-2*margin,...)   ... for nup>1: PageLeft=0,etc.
    //  if (double)  margin+=2*fscale ...rect...
 
-  std::string boxcmd=std::string("q 1 w 0 G \n")+ // TODO
-                     QUtil::double_to_string(rect.left)+" "+QUtil::double_to_string(rect.top)+"  "+
-                     QUtil::double_to_string(rect.right-rect.left)+" "+QUtil::double_to_string(rect.bottom-rect.top)+" re S \nQ\n";
-  // TODO: border.style ...
+  std::string boxcmd="q\n";
+  boxcmd+="  "+QUtil::double_to_string(line_width)+" w 0 G \n";
+  boxcmd+="  "+QUtil::double_to_string(rect.left)+" "+QUtil::double_to_string(rect.bottom)+"  "+
+               QUtil::double_to_string(rect.right-rect.left)+" "+QUtil::double_to_string(rect.top-rect.bottom)+" re S\n";
+  if (border&TWO) {
+  boxcmd+="  "+QUtil::double_to_string(line_width*2)+" w 0.5 G \n";
+    boxcmd+="  "+QUtil::double_to_string(rect.left+margin)+" "+QUtil::double_to_string(rect.bottom+margin)+"  "+
+                 QUtil::double_to_string(rect.right-rect.left-2*margin)+" "+QUtil::double_to_string(rect.top-rect.bottom-2*margin)+" re S \n";
+  }
+  boxcmd+="Q\n";
 
 // if (!isExisting()) {
 //   // TODO: only after 

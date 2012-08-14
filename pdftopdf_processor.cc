@@ -114,7 +114,6 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
       }
       if (param.mirror) {
         curpage->mirror();
-// TODO: update rect?
       }
 
       // TODO?! pstops uses  output rect?!
@@ -155,6 +154,7 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
         if (param.withPage(outputno)) {
           if ( (curpage)&&(param.mirror) ) {
             curpage->mirror();
+// TODO: update rect?
           }
           proc.add_page(curpage,param.reverse); // empty will just no-op;  reverse -> insert at beginning
         }
