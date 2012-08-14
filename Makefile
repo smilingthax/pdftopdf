@@ -4,7 +4,7 @@ EXEC=pt
 #CXX=/home/thobi/dls/gstlfilt/gfilt
 #CFLAGS=-O3 -funroll-all-loops -finline-functions -Wall -g
 CFLAGS=-Wall -g
-CXXFLAGS=-std=c++0x
+CXXFLAGS=-std=c++0x -DDEBUG
 LDFLAGS=-g
 CPPFLAGS=$(CFLAGS) $(FLAGS)
 PACKAGES=

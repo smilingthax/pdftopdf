@@ -591,6 +591,7 @@ int main(int argc,char **argv)
 {
   if ( (argc<6)||(argc>7) ) {
     fprintf(stderr,"Usage: %s job-id user title copies options [file]\n",argv[0]);
+#ifdef DEBUG
     debugdump();
 
 ProcessingParameters param;
@@ -624,6 +625,7 @@ if (!proc1->loadFilename("in.pdf")) return 2;
     param.dump();
 if (!processPDFTOPDF(*proc1,param)) return 3;
 proc1->emitFilename("out.pdf");
+#endif
     return 1;
   }
 

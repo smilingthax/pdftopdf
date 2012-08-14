@@ -131,9 +131,11 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,const ProcessingParameters &param)
 pages[iA]->add_border_rect(rect,param.border,pgedit.scale);
     curpage->add_subpage(pages[iA],pgedit.xpos+xpos,pgedit.ypos+ypos,pgedit.scale);
 
+#ifdef DEBUG
     if (auto dbg=dynamic_cast<QPDF_PDFTOPDF_PageHandle *>(curpage.get())) {
 //      dbg->debug(pgedit.sub,xpos,ypos);
     }
+#endif
 
 //    pgedit.dump();
   }
