@@ -25,13 +25,16 @@ static std::string debug_box(const PageRect &box,float xshift,float yshift) // {
 // }}}
 
 QPDF_PDFTOPDF_PageHandle::QPDF_PDFTOPDF_PageHandle(QPDFObjectHandle page,int orig_no) // {{{
-  : page(page),no(orig_no)
+  : page(page),
+    no(orig_no),
+    rotation(ROT_0)
 {
 }
 // }}}
 
 QPDF_PDFTOPDF_PageHandle::QPDF_PDFTOPDF_PageHandle(QPDF *pdf,float width,float height) // {{{
-  : no(0)
+  : no(0),
+    rotation(ROT_0)
 {
   assert(pdf);
   page=QPDFObjectHandle::parse(
@@ -91,6 +94,7 @@ QPDFObjectHandle QPDF_PDFTOPDF_PageHandle::get() // {{{
 void QPDF_PDFTOPDF_PageHandle::add_border_rect(const PageRect &rect,BorderType border,float fscale) // {{{
 {
   assert(isExisting());
+  assert(border!=BorderType::NONE);
   static const char *pre="%pdftopdf q\n"
                          "q\n",
                     *post="%pdftopdf Q\n"
@@ -197,6 +201,7 @@ void QPDF_PDFTOPDF_PageHandle::debug(const PageRect &rect,float xpos,float ypos)
 void QPDF_PDFTOPDF_Processor::closeFile() // {{{
 {
   pdf.reset();
+  hasCM=false;
 }
 // }}}
 
@@ -380,6 +385,8 @@ void QPDF_PDFTOPDF_Processor::addCM(const char *defaulticc,const char *outputicc
   addDefaultRGB(*pdf,srcicc);
 
   addOutputIntent(*pdf,outputicc);
+
+  hasCM=true;
 }
 // }}}
 
@@ -400,6 +407,11 @@ void QPDF_PDFTOPDF_Processor::emitFile(FILE *f,ArgOwnership take) // {{{
     error("emitFile with MustDuplicate is not supported");
     return;
   }
+  if (hasCM) {
+    out.setMinimumPDFVersion("1.4");
+  } else {
+    out.setMinimumPDFVersion("1.2");
+  }
   out.write();
 }
 // }}}
@@ -411,6 +423,11 @@ void QPDF_PDFTOPDF_Processor::emitFilename(const char *name) // {{{
   }
   // special case: name==NULL -> stdout
   QPDFWriter out(*pdf,name);
+  if (hasCM) {
+    out.setMinimumPDFVersion("1.4");
+  } else {
+    out.setMinimumPDFVersion("1.2");
+  }
   out.write();
 }
 // }}}

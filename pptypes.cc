@@ -38,14 +38,14 @@ void Rotation_dump(Rotation rot) // {{{
   if ( (rot<ROT_0)||(rot>ROT_270) ) {
     printf("(bad rotation: %d)",rot);
   } else {
-    fputs(rstr[rot+1],stdout);
+    fputs(rstr[rot],stdout);
   }
 }
 // }}}
 
 Rotation operator+(Rotation lhs,Rotation rhs) // {{{
 {
-  return (Rotation)((lhs+rhs)%4);
+  return (Rotation)(((int)lhs+(int)rhs)%4);
 }
 // }}}
 

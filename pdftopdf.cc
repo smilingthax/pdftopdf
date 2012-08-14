@@ -296,7 +296,7 @@ void calculate(ppd_file_t *ppd,int num_options,cups_option_t *options,Processing
     }
   }
 // TODO?  pstops checks =="true", pdftops !is_false
-  param.fitplot=!is_false(val);
+  param.fitplot=(val)&&(!is_false(val));
 
   int ipprot;
   param.orientation=ROT_0;
@@ -643,7 +643,12 @@ proc1->emitFilename("out.pdf");
   // TODO: process options.
   calculate(ppd,num_options,options,param);
 #ifdef DEBUG
+  int oldfd=dup(1),newfd=dup(2);
+  dup2(newfd,1);
+  close(newfd);
   param.dump();
+  dup2(oldfd,1);
+  close(oldfd);
 #endif
 
   cupsFreeOptions(num_options,options);
