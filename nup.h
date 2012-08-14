@@ -9,6 +9,7 @@ struct NupParameters {
   NupParameters() 
     : nupX(1),nupY(1),
       width(NAN),height(NAN),
+      landscape(false),
       first(X),
       xstart(LEFT),ystart(TOP),
       xalign(CENTER),yalign(CENTER)
@@ -17,7 +18,7 @@ struct NupParameters {
   // --- "calculated" parameters ---
   int nupX,nupY;
   float width,height;
-  // landscape?
+  bool landscape; // post-rotate!
 
   // --- other settings ---
   // ordering
@@ -27,6 +28,7 @@ struct NupParameters {
   Position xalign,yalign;
 
   static bool possible(int nup); // TODO?  float in_ratio,float out_ratio
+  static void preset(int nup,NupParameters &ret);
   static float calculate(int nup, float in_ratio, float out_ratio,NupParameters &ret); // returns "quality", 1 is best
 
   void dump() const;

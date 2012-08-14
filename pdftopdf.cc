@@ -295,7 +295,7 @@ void calculate(ppd_file_t *ppd,int num_options,cups_option_t *options,Processing
       val=cupsGetOption("ipp-attribute-fidelity",num_options,options);
     }
   }
-// TODO FIXME?  pstops checks =="true", pdftops !is_false
+// TODO?  pstops checks =="true", pdftops !is_false
   param.fitplot=!is_false(val);
 
   int ipprot;
@@ -364,9 +364,8 @@ void calculate(ppd_file_t *ppd,int num_options,cups_option_t *options,Processing
       nup=1;
     }
 // TODO   ;  TODO? nup enabled? ... fitplot
-    param.nup.nupX=nup;
-    param.nup.nupY=1;
 //    NupParameters::calculate(nup,param.nup);
+    NupParameters::preset(nup,param.nup);
   }
 
   if ( (val=cupsGetOption("number-up-layout",num_options,options)) != NULL) {
