@@ -135,7 +135,7 @@ public:
 };
 
 // This is all we want: 
-bool processPDFTOPDF(PDFTOPDF_Processor &proc,const ProcessingParameters &param);
+bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param);
 
 
 #endif

@@ -89,7 +89,7 @@ PDFTOPDF_Processor *PDFTOPDF_Factory::processor()
 }
 
 
-bool processPDFTOPDF(PDFTOPDF_Processor &proc,const ProcessingParameters &param) // {{{
+bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{{
 {
   if (!proc.check_print_permissions()) {
     fprintf(stderr,"Not allowed to print\n");
@@ -103,7 +103,13 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,const ProcessingParameters &param)
   std::shared_ptr<PDFTOPDF_PageHandle> curpage;
   int outputno=0;
 
-  // TODO: if (!fitplot)&&(nupX==1)&&(nupY==1)   // see main()
+  if ( (param.nup.nupX==1)&&(param.nup.nupY==1)&&(!param.fitplot) ) {
+    param.nup.width=param.page.width;
+    param.nup.height=param.page.height;
+  } else {
+    param.nup.width=param.page.right-param.page.left;
+    param.nup.height=param.page.top-param.page.bottom;
+  }
 
   double xpos=param.page.left,
          ypos=param.page.bottom; // for whole page... TODO from position...
@@ -151,20 +157,12 @@ pages[iA]->add_border_rect(rect,param.border,pgedit.scale);
     proc.add_page(proc.new_page(param.page.width,param.page.height),param.reverse);
   }
 
-/*
-
-  ..
-  .
-
-*/
   // TODO: copies (w/ collate ...)
   proc.multiply(param.numCopies);
 
-fprintf(stderr,"TODO setProcess\n");
-//  ...
+//fprintf(stderr,"TODO setProcess\n");
 
-return true;
-  return false;
+  return true;
 }
 // }}}
 

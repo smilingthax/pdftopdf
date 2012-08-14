@@ -610,13 +610,6 @@ std::unique_ptr<PDFTOPDF_Processor> proc1(PDFTOPDF_Factory::processor());
 /*
 */
 //param.nup.yalign=TOP;
-  if ( (param.nup.nupX==1)&&(param.nup.nupY==1)&&(!param.fitplot) ) {
-    param.nup.width=param.page.width;
-    param.nup.height=param.page.height;
-  } else {
-    param.nup.width=param.page.right-param.page.left;
-    param.nup.height=param.page.top-param.page.bottom;
-  }
 param.border=BorderType::ONE;
 //param.mirror=true;
 //param.reverse=true;
@@ -649,6 +642,10 @@ proc1->emitFilename("out.pdf");
   cupsMarkOptions(ppd,num_options,options);
 
   // TODO: process options.
+  calculate(ppd,num_options,options,param);
+#ifdef DEBUG
+  param.dump();
+#endif
 
   cupsFreeOptions(num_options,options);
 

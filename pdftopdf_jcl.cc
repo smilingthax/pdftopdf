@@ -121,6 +121,8 @@ ppd_decode(char *string)		/* I - String to decode */
 
 void emitPreamble(ppd_file_t *ppd,const ProcessingParameters &param) // {{{
 {
+  if (ppd == 0) return;
+
   ppdEmit(ppd,stdout,PPD_ORDER_EXIT);
 
   if (param.emitJCL) {
