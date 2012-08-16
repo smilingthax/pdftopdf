@@ -88,6 +88,50 @@ PDFTOPDF_Processor *PDFTOPDF_Factory::processor()
   return new QPDF_PDFTOPDF_Processor();
 }
 
+// (1-based)
+//   9: [*] [1] [2] [*]  [*] [3] [4] [9]  [8] [5] [6] [7]   -> signature = 12 = 3*4 = ((9+3)/4)*4
+//       1   2   3   4    5   6   7   8    9   10  11  12 
+// NOTE: psbook always fills the sig completely (results in completely white pages (4-set), depending on the input)
+
+static void bookOutput(std::vector<int> &ret,int page,int numPages) // {{{
+{
+  if (page<numPages) {
+    ret.push_back(page);
+  } else {
+    ret.push_back(-1); // empty page needed as filler
+  }
+}
+// }}}
+
+std::vector<int> bookletShuffle(int numPages,int signature) // {{{
+{
+  if (signature==-1) { 
+    signature=numPages+3;
+  }
+  assert(signature%4==0);
+
+  std::vector<int> ret;
+  ret.reserve(numPages+signature-1);
+
+  int curpage=0;
+  while (curpage<numPages) {
+    // as long as pages to be done -- i.e. multiple times the signature
+    int firstpage=curpage,
+        lastpage=curpage+signature-1;
+    // one signature
+    while (firstpage<lastpage) {
+      bookOutput(ret,lastpage--,numPages);
+      bookOutput(ret,firstpage++,numPages);
+      bookOutput(ret,firstpage++,numPages);
+      bookOutput(ret,lastpage--,numPages);
+    }
+    curpage+=signature;
+  }
+  return ret;
+}
+// }}}
+
+
 
 bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{{
 {
