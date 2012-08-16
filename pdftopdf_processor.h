@@ -26,6 +26,8 @@ struct ProcessingParameters {
       collate(false),
       evenDuplex(false),
 
+      withShuffle(false),
+
       emitJCL(true),deviceCopies(1),
       setDuplex(false),unsetCollate(false)
   {
@@ -67,6 +69,9 @@ struct ProcessingParameters {
   ??? shuffle 
 */
   bool evenDuplex; // make number of pages a multiple of 2
+
+  bool withShuffle;
+  std::vector<int> shuffle;
 
   bool emitJCL;
   int deviceCopies;

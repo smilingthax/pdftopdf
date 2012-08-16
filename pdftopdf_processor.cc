@@ -68,6 +68,17 @@ void ProcessingParameters::dump() const // {{{
 
   ??? shuffle 
 */
+  printf("withShuffle: %s\n",
+         (withShuffle)?"true":"false");
+  if (withShuffle) {
+    const int slen=shuffle.size();
+    printf("shuffle(%d):",slen);
+    for (int iA=0;iA<slen;iA++) {
+      printf(" %d",shuffle[iA]);
+    }
+    printf("\n");
+  }
+
   printf("evenDuplex: %s\n",
          (evenDuplex)?"true":"false");
 
