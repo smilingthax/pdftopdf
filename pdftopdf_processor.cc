@@ -2,6 +2,18 @@
 #include "qpdf_pdftopdf_processor.h"
 #include <stdio.h>
 #include <assert.h>
+#include <numeric>
+
+void BookletMode_dump(BookletMode bkm) // {{{
+{
+  static const char *bstr[3]={"Off","On","Shuffle-Only"};
+  if ( (bkm<BOOKLET_OFF)||(bkm>BOOKLET_JUSTSHUFFLE) ) {
+    printf("(bad booklet mode: %d)",bkm);
+  } else {
+    fputs(bstr[bkm],stdout);
+  }
+}
+// }}}
 
 bool ProcessingParameters::withPage(int outno) const // {{{
 {
@@ -66,18 +78,11 @@ void ProcessingParameters::dump() const // {{{
   ...
   ...
 
-  ??? shuffle 
 */
-  printf("withShuffle: %s\n",
-         (withShuffle)?"true":"false");
-  if (withShuffle) {
-    const int slen=shuffle.size();
-    printf("shuffle(%d):",slen);
-    for (int iA=0;iA<slen;iA++) {
-      printf(" %d",shuffle[iA]);
-    }
-    printf("\n");
-  }
+
+  printf("bookletMode: ");
+  BookletMode_dump(booklet);
+  printf("\nbooklet signature: %d\n",bookSignature);
 
   printf("evenDuplex: %s\n",
          (evenDuplex)?"true":"false");
@@ -104,16 +109,7 @@ PDFTOPDF_Processor *PDFTOPDF_Factory::processor()
 //       1   2   3   4    5   6   7   8    9   10  11  12 
 // NOTE: psbook always fills the sig completely (results in completely white pages (4-set), depending on the input)
 
-static void bookOutput(std::vector<int> &ret,int page,int numPages) // {{{
-{
-  if (page<numPages) {
-    ret.push_back(page);
-  } else {
-    ret.push_back(-1); // empty page needed as filler
-  }
-}
-// }}}
-
+// empty pages must be added for output values >=numPages
 std::vector<int> bookletShuffle(int numPages,int signature) // {{{
 {
   if (signature<0) { 
@@ -131,17 +127,16 @@ std::vector<int> bookletShuffle(int numPages,int signature) // {{{
         lastpage=curpage+signature-1;
     // one signature
     while (firstpage<lastpage) {
-      bookOutput(ret,lastpage--,numPages);
-      bookOutput(ret,firstpage++,numPages);
-      bookOutput(ret,firstpage++,numPages);
-      bookOutput(ret,lastpage--,numPages);
+      ret.push_back(lastpage--);
+      ret.push_back(firstpage++);
+      ret.push_back(firstpage++);
+      ret.push_back(lastpage--);
     }
     curpage+=signature;
   }
   return ret;
 }
 // }}}
-
 
 bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{{
 {
@@ -151,20 +146,21 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
   }
 
   std::vector<std::shared_ptr<PDFTOPDF_PageHandle>> pages=proc.get_pages();
-  const int numPages=pages.size();
+  const int numOrigPages=pages.size();
 
-  // shuffle
-  // TODO FIXME: elsewhere / different[remove param.shuffle]
+  // TODO FIXME? elsewhere
+  std::vector<int> shuffle;
   if (param.booklet!=BOOKLET_OFF) {
-    param.withShuffle=true;
-    param.shuffle=bookletShuffle(numPages,param.bookSignature);
+    shuffle=bookletShuffle(numOrigPages,param.bookSignature);
     if (param.booklet==BOOKLET_ON) { // override options
       param.duplex=true;
       NupParameters::preset(2,param.nup); // TODO?! better
     }
-    // TODO: now shuffle pages by param.shuffle;
-    //       if (==-1) { add empty page }
+  } else { // 0 1 2 3 ... 
+    shuffle.resize(numOrigPages);
+    std::iota(shuffle.begin(),shuffle.end(),0);
   }
+  const int numPages=std::max(shuffle.size(),pages.size());
 
   std::shared_ptr<PDFTOPDF_PageHandle> curpage;
   int outputno=0;
@@ -181,29 +177,37 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
         continue;
       }
 
-      pages[iA]->rotate(param.orientation);
+      if (shuffle[iA]>=numOrigPages) {
+        // add empty page as filler
+        proc.add_page(proc.new_page(param.page.width,param.page.height),param.reverse);
+        continue; // no border, etc.
+      }
+      auto page=pages[shuffle[iA]];
+
+      page->rotate(param.orientation);
 
       if (param.mirror) {
-        pages[iA]->mirror();
+        page->mirror();
       }
 
       // place border
-      if (param.border!=BorderType::NONE) {
+      if ( (param.border!=BorderType::NONE)&&(iA<numOrigPages) ) {
 #if 0 // would be nice, but is not possible
-        PageRect rect=pages[iA]->getRect();
+        PageRect rect=page->getRect();
 
         rect.left+=param.page.left;
         rect.bottom+=param.page.bottom;
         rect.top-=param.page.top;
         rect.right-=param.page.right;
         // width,height not needed for add_border_rect (FIXME?)
-        pages[iA]->add_border_rect(rect,param.border,1.0); 
+
+        page->add_border_rect(rect,param.border,1.0); 
 #else // this is what pstops does
-        pages[iA]->add_border_rect(param.page,param.border,1.0); 
+        page->add_border_rect(param.page,param.border,1.0); 
 #endif
       }
 
-      proc.add_page(pages[iA],param.reverse); // reverse -> insert at beginning
+      proc.add_page(page,param.reverse); // reverse -> insert at beginning
     }
     outputno=numPages;
   } else {
@@ -230,7 +234,15 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
     NupState nupstate(param.nup);
     NupPageEdit pgedit;
     for (int iA=0;iA<numPages;iA++) {
-      PageRect rect=pages[iA]->getRect();
+      std::shared_ptr<PDFTOPDF_PageHandle> page;
+      if (shuffle[iA]>=numOrigPages) {
+        // add empty page as filler
+        page=proc.new_page(param.page.width,param.page.height);
+      } else {
+        page=pages[shuffle[iA]];
+      }
+
+      PageRect rect=page->getRect();
 //      rect.dump();
 
       bool newPage=nupstate.nextPage(rect.width,rect.height,pgedit);
@@ -246,13 +258,16 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
         outputno++;
         curpage=proc.new_page(param.page.width,param.page.height);
       }
+      if (shuffle[iA]>=numOrigPages) {
+        continue;
+      }
 
       if (param.border!=BorderType::NONE) {
         // TODO? -left/-right needs to be added back?
-        pages[iA]->add_border_rect(rect,param.border,pgedit.scale);
+        page->add_border_rect(rect,param.border,1.0/pgedit.scale);
       }
 
-      curpage->add_subpage(pages[iA],pgedit.xpos+xpos,pgedit.ypos+ypos,pgedit.scale);
+      curpage->add_subpage(page,pgedit.xpos+xpos,pgedit.ypos+ypos,pgedit.scale);
 
 #ifdef DEBUG
       if (auto dbg=dynamic_cast<QPDF_PDFTOPDF_PageHandle *>(curpage.get())) {

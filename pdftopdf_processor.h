@@ -29,7 +29,6 @@ struct ProcessingParameters {
       evenDuplex(false),
 
       booklet(BOOKLET_OFF),bookSignature(-1),
-      withShuffle(false),
 
       emitJCL(true),deviceCopies(1),
       setDuplex(false),unsetCollate(false)
@@ -76,9 +75,6 @@ struct ProcessingParameters {
   BookletMode booklet;
   int bookSignature;
 
-  bool withShuffle;
-  std::vector<int> shuffle; // calculated from booklet
-
   bool emitJCL;
   int deviceCopies;
 
@@ -101,6 +97,7 @@ class PDFTOPDF_PageHandle {
 public:
   virtual ~PDFTOPDF_PageHandle() {}
   virtual PageRect getRect() const =0;
+  // fscale:  inverse_scale (from nup, fitplot)
   virtual void add_border_rect(const PageRect &rect,BorderType border,float fscale) =0;
   virtual void add_subpage(const std::shared_ptr<PDFTOPDF_PageHandle> &sub,float xpos,float ypos,float scale) =0; // or simply: const NupPageEdit &edit
   virtual void mirror() =0;

@@ -422,7 +422,6 @@ void calculate(ppd_file_t *ppd,int num_options,cups_option_t *options,Processing
   // TODO: emit-jcl
 */
 
-// TODO booklet
   param.booklet=BookletMode::BOOKLET_OFF;
   if ( (val=cupsGetOption("booklet",num_options,options)) != NULL) {
     if (strcasecmp(val,"shuffle-only")==0) {

@@ -99,9 +99,6 @@ void QPDF_PDFTOPDF_PageHandle::add_border_rect(const PageRect &rect,BorderType b
                     *post="%pdftopdf Q\n"
                           "Q\n";
 
-// fscale:  inverse_scale (from nup, fitplot)
-  fscale=1.0/fscale; // TODO?
-
   // straight from pstops
   const double lw=(border&THICK)?0.5:0.24;
   double line_width=lw*fscale;
@@ -114,7 +111,6 @@ void QPDF_PDFTOPDF_PageHandle::add_border_rect(const PageRect &rect,BorderType b
   boxcmd+="  "+QUtil::double_to_string(rect.left)+" "+QUtil::double_to_string(rect.bottom)+"  "+
                QUtil::double_to_string(rect.right-rect.left)+" "+QUtil::double_to_string(rect.top-rect.bottom)+" re S\n";
   if (border&TWO) {
-  boxcmd+="  "+QUtil::double_to_string(line_width*2)+" w 0.5 G \n";
     boxcmd+="  "+QUtil::double_to_string(rect.left+margin)+" "+QUtil::double_to_string(rect.bottom+margin)+"  "+
                  QUtil::double_to_string(rect.right-rect.left-2*margin)+" "+QUtil::double_to_string(rect.top-rect.bottom-2*margin)+" re S \n";
   }
