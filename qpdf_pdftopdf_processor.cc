@@ -351,7 +351,6 @@ void QPDF_PDFTOPDF_Processor::add_page(std::shared_ptr<PDFTOPDF_PageHandle> page
   pdf->getRoot().removeKey("/PageLabels");
 #endif
 
-// TODO FIXME: not collated
 void QPDF_PDFTOPDF_Processor::multiply(int copies,bool collate) // {{{
 {
   assert(pdf);
@@ -369,7 +368,7 @@ void QPDF_PDFTOPDF_Processor::multiply(int copies,bool collate) // {{{
   } else {
     for (int iB=0;iB<len;iB++) {
       for (int iA=1;iA<copies;iA++) {
-        pdf->addPage(pages[iB].shallowCopy(),false);
+        pdf->addPageAt(pages[iB].shallowCopy(),false,pages[iB]);
       }
     }
   }
