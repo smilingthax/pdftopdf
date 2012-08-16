@@ -6,6 +6,8 @@
 #include "intervalset.h"
 #include <vector>
 
+enum BookletMode { BOOKLET_OFF, BOOKLET_ON, BOOKLET_JUSTSHUFFLE };
+
 struct ProcessingParameters {
   ProcessingParameters() 
     : jobId(0),numCopies(1),
@@ -26,6 +28,7 @@ struct ProcessingParameters {
       collate(false),
       evenDuplex(false),
 
+      booklet(BOOKLET_OFF),bookSignature(-1),
       withShuffle(false),
 
       emitJCL(true),deviceCopies(1),
@@ -70,8 +73,11 @@ struct ProcessingParameters {
 */
   bool evenDuplex; // make number of pages a multiple of 2
 
+  BookletMode booklet;
+  int bookSignature;
+
   bool withShuffle;
-  std::vector<int> shuffle;
+  std::vector<int> shuffle; // calculated from booklet
 
   bool emitJCL;
   int deviceCopies;

@@ -116,8 +116,8 @@ static void bookOutput(std::vector<int> &ret,int page,int numPages) // {{{
 
 std::vector<int> bookletShuffle(int numPages,int signature) // {{{
 {
-  if (signature==-1) { 
-    signature=numPages+3;
+  if (signature<0) { 
+    signature=(numPages+3)&~0x3;
   }
   assert(signature%4==0);
 
@@ -143,7 +143,6 @@ std::vector<int> bookletShuffle(int numPages,int signature) // {{{
 // }}}
 
 
-
 bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{{
 {
   if (!proc.check_print_permissions()) {
@@ -151,8 +150,22 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
     return false;
   }
 
-  std::vector<std::shared_ptr<PDFTOPDF_PageHandle>> pages=proc.get_pages(); // TODO: shuffle
+  std::vector<std::shared_ptr<PDFTOPDF_PageHandle>> pages=proc.get_pages();
   const int numPages=pages.size();
+
+  // shuffle
+  // TODO FIXME: elsewhere / different[remove param.shuffle]
+  if (param.booklet!=BOOKLET_OFF) {
+    param.withShuffle=true;
+    param.shuffle=bookletShuffle(numPages,param.bookSignature);
+    if (param.booklet==BOOKLET_ON) { // override options
+      param.duplex=true;
+      NupParameters::preset(2,param.nup); // TODO?! better
+    }
+    // TODO: now shuffle pages by param.shuffle;
+    //       if (==-1) { add empty page }
+  }
+
   std::shared_ptr<PDFTOPDF_PageHandle> curpage;
   int outputno=0;
 
