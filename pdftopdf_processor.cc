@@ -153,7 +153,8 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
   if (param.booklet!=BOOKLET_OFF) {
     shuffle=bookletShuffle(numOrigPages,param.bookSignature);
     if (param.booklet==BOOKLET_ON) { // override options
-      param.duplex=true;
+  // TODO? specifically "sides=two-sided-short-edge" / DuplexTumble 
+//      param.duplex=true;   // param.setDuplex=true;  ?    currently done in setFinalPPD()
       NupParameters::preset(2,param.nup); // TODO?! better
     }
   } else { // 0 1 2 3 ... 
@@ -267,6 +268,7 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
         page->add_border_rect(rect,param.border,1.0/pgedit.scale);
       }
 
+//      curpage->add_subpage(page,pgedit.xpos+xpos,pgedit.ypos+ypos,pgedit.scale,&rect);
       curpage->add_subpage(page,pgedit.xpos+xpos,pgedit.ypos+ypos,pgedit.scale);
 
 #ifdef DEBUG
@@ -275,7 +277,7 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
       }
 #endif
 
-//      pgedit.dump();
+      pgedit.dump();
     }
     if ( (param.withPage(outputno))&&(curpage) ) {
       curpage->rotate(param.orientation);
@@ -293,8 +295,6 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
   }
 
   proc.multiply(param.numCopies,param.collate);
-
-//fprintf(stderr,"TODO setProcess\n");
 
   return true;
 }

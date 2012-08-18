@@ -108,9 +108,10 @@ void QPDF_PDFTOPDF_PageHandle::add_border_rect(const PageRect &rect,BorderType b
 
   std::string boxcmd="q\n";
   boxcmd+="  "+QUtil::double_to_string(line_width)+" w 0 G \n";
-  boxcmd+="  "+QUtil::double_to_string(rect.left)+" "+QUtil::double_to_string(rect.bottom)+"  "+
-               QUtil::double_to_string(rect.right-rect.left)+" "+QUtil::double_to_string(rect.top-rect.bottom)+" re S\n";
+  boxcmd+="  "+QUtil::double_to_string(rect.left+margin)+" "+QUtil::double_to_string(rect.bottom+margin)+"  "+
+               QUtil::double_to_string(rect.right-rect.left-2*margin)+" "+QUtil::double_to_string(rect.top-rect.bottom-2*margin)+" re S \n";
   if (border&TWO) {
+    margin+=2*fscale;
     boxcmd+="  "+QUtil::double_to_string(rect.left+margin)+" "+QUtil::double_to_string(rect.bottom+margin)+"  "+
                  QUtil::double_to_string(rect.right-rect.left-2*margin)+" "+QUtil::double_to_string(rect.top-rect.bottom-2*margin)+" re S \n";
   }
@@ -131,7 +132,7 @@ void QPDF_PDFTOPDF_PageHandle::add_border_rect(const PageRect &rect,BorderType b
 // }}}
 
 // TODO: test rotation
-void QPDF_PDFTOPDF_PageHandle::add_subpage(const std::shared_ptr<PDFTOPDF_PageHandle> &sub,float xpos,float ypos,float scale) // {{{
+void QPDF_PDFTOPDF_PageHandle::add_subpage(const std::shared_ptr<PDFTOPDF_PageHandle> &sub,float xpos,float ypos,float scale,const PageRect *crop) // {{{
 {
   auto qsub=dynamic_cast<QPDF_PDFTOPDF_PageHandle *>(sub.get());
   assert(qsub);
@@ -143,9 +144,15 @@ void QPDF_PDFTOPDF_PageHandle::add_subpage(const std::shared_ptr<PDFTOPDF_PageHa
   mtx.translate(xpos,ypos);
   mtx.scale(scale);
   mtx.rotate(qsub->rotation); // TODO? -sub.rotation ?
+  if (crop) { // TODO? other technique: set trim-box before makeXObject (but this modifies original page)
+    mtx.translate(crop->left,crop->bottom);
+  }
 
   content.append("q\n  ");
   content.append(mtx.get_string()+" cm\n  ");
+  if (crop) {
+    content.append("0 0 "+QUtil::double_to_string(crop->right-crop->left)+" "+QUtil::double_to_string(crop->top-crop->bottom)+" re W n\n  ");
+  }
   content.append(xoname+" Do\n");
   content.append("Q\n");
 }
