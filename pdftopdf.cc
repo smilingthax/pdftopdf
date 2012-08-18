@@ -542,9 +542,9 @@ see also setFinalPPD()
 
 void dump_options(int num_options,cups_option_t *options)
 {
-  printf("%d options:\n",num_options);
+  fprintf(stderr,"%d options:\n",num_options);
   for (int iA=0;iA<num_options;iA++) {
-    printf("  %s: %s\n",options[iA].name,options[iA].value);
+    fprintf(stderr,"  %s: %s\n",options[iA].name,options[iA].value);
   }
 }
 
@@ -644,12 +644,7 @@ proc1->emitFilename("out.pdf");
   calculate(ppd,param);
 
 #ifdef DEBUG
-  int oldfd=dup(1),newfd=dup(2);
-  dup2(newfd,1);
-  close(newfd);
   param.dump();
-  dup2(oldfd,1);
-  close(oldfd);
 #endif
 
   cupsFreeOptions(num_options,options);

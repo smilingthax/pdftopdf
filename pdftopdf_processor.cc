@@ -8,9 +8,9 @@ void BookletMode_dump(BookletMode bkm) // {{{
 {
   static const char *bstr[3]={"Off","On","Shuffle-Only"};
   if ( (bkm<BOOKLET_OFF)||(bkm>BOOKLET_JUSTSHUFFLE) ) {
-    printf("(bad booklet mode: %d)",bkm);
+    fprintf(stderr,"(bad booklet mode: %d)",bkm);
   } else {
-    fputs(bstr[bkm],stdout);
+    fputs(bstr[bkm],stderr);
   }
 }
 // }}}
@@ -30,49 +30,49 @@ bool ProcessingParameters::withPage(int outno) const // {{{
 
 void ProcessingParameters::dump() const // {{{
 {
-  printf("jobId: %d, nupCopies: %d\n",
-         jobId,numCopies);
-  printf("user: %s, title: %s\n",
-         (user)?user:"(null)",(title)?title:"(null)");
-  printf("fitplot: %s\n",
-         (fitplot)?"true":"false");
+  fprintf(stderr,"jobId: %d, nupCopies: %d\n",
+                 jobId,numCopies);
+  fprintf(stderr,"user: %s, title: %s\n",
+                 (user)?user:"(null)",(title)?title:"(null)");
+  fprintf(stderr,"fitplot: %s\n",
+                 (fitplot)?"true":"false");
 
   page.dump();
 
-  printf("Rotation(CCW): ");
+  fprintf(stderr,"Rotation(CCW): ");
   Rotation_dump(orientation);
-  printf("\n");
+  fprintf(stderr,"\n");
 
-  printf("duplex: %s\n",
-         (duplex)?"true":"false");
+  fprintf(stderr,"duplex: %s\n",
+                 (duplex)?"true":"false");
 
-  printf("Border: ");
+  fprintf(stderr,"Border: ");
   BorderType_dump(border);
-  printf("\n");
+  fprintf(stderr,"\n");
 
   nup.dump();
 
-  printf("reverse: %s\n",
-         (reverse)?"true":"false");
+  fprintf(stderr,"reverse: %s\n",
+                 (reverse)?"true":"false");
 
-  printf("evenPages: %s, oddPages: %s\n",
-         (evenPages)?"true":"false",
-         (oddPages)?"true":"false");
+  fprintf(stderr,"evenPages: %s, oddPages: %s\n",
+                 (evenPages)?"true":"false",
+                 (oddPages)?"true":"false");
 
-  printf("page range: ");
+  fprintf(stderr,"page range: ");
   pageRange.dump();
 
-  printf("mirror: %s\n",
-         (mirror)?"true":"false");
+  fprintf(stderr,"mirror: %s\n",
+                 (mirror)?"true":"false");
 
-  printf("Position: ");
+  fprintf(stderr,"Position: ");
   Position_dump(xpos,Axis::X);
-  printf("/");
+  fprintf(stderr,"/");
   Position_dump(ypos,Axis::Y);
-  printf("\n");
+  fprintf(stderr,"\n");
 
-  printf("collate: %s\n",
-         (collate)?"true":"false");
+  fprintf(stderr,"collate: %s\n",
+                 (collate)?"true":"false");
 /*
   // std::string pageLabel; // or NULL?  must stay/dup!
   ...
@@ -80,21 +80,22 @@ void ProcessingParameters::dump() const // {{{
 
 */
 
-  printf("bookletMode: ");
+  fprintf(stderr,"bookletMode: ");
   BookletMode_dump(booklet);
-  printf("\nbooklet signature: %d\n",bookSignature);
+  fprintf(stderr,"\nbooklet signature: %d\n",
+                 bookSignature);
 
-  printf("evenDuplex: %s\n",
-         (evenDuplex)?"true":"false");
+  fprintf(stderr,"evenDuplex: %s\n",
+                 (evenDuplex)?"true":"false");
 
-  printf("emitJCL: %s\n",
-         (emitJCL)?"true":"false");
-  printf("deviceCopies: %d\n",
-         deviceCopies);
-  printf("setDuplex: %s\n",
-         (setDuplex)?"true":"false");
-  printf("unsetCollate: %s\n",
-         (unsetCollate)?"true":"false");
+  fprintf(stderr,"emitJCL: %s\n",
+                 (emitJCL)?"true":"false");
+  fprintf(stderr,"deviceCopies: %d\n",
+                 deviceCopies);
+  fprintf(stderr,"setDuplex: %s\n",
+                 (setDuplex)?"true":"false");
+  fprintf(stderr,"unsetCollate: %s\n",
+                 (unsetCollate)?"true":"false");
 }
 // }}}
 
