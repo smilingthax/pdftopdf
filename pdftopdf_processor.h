@@ -30,7 +30,7 @@ struct ProcessingParameters {
 
       booklet(BOOKLET_OFF),bookSignature(-1),
 
-      emitJCL(true),deviceCopies(1),
+      emitJCL(true),deviceCopies(1),deviceReverse(false),
       setDuplex(false),unsetCollate(false)
   {
     page.width=612.0; // letter
@@ -72,6 +72,7 @@ struct ProcessingParameters {
 
   bool emitJCL;
   int deviceCopies;
+  bool deviceReverse;
 
   // ppd changes
   bool setDuplex;

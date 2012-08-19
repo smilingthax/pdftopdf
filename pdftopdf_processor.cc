@@ -213,7 +213,6 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
     }
     outputno=numPages;
   } else {
-// TODO... -left/-right needs to be subtracted from param.nup.width/height
     param.nup.width=param.page.right-param.page.left;
     param.nup.height=param.page.top-param.page.bottom;
 
@@ -244,7 +243,21 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
         page=pages[shuffle[iA]];
       }
 
-      PageRect rect=page->getRect();
+      PageRect rect;
+      if (param.fitplot) {
+        rect=page->getRect();
+      } else {
+// TODO?
+        rect.left=0;
+        rect.bottom=0;
+        rect.right=param.page.width;
+        rect.top=param.page.height;
+
+        rect.width=param.page.width;
+        rect.height=param.page.height;
+
+        rect.rotate_move(param.orientation,rect.width,rect.height);
+      }
 //      rect.dump();
 
       bool newPage=nupstate.nextPage(rect.width,rect.height,pgedit);
@@ -265,11 +278,12 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
       }
 
       if (param.border!=BorderType::NONE) {
-        // TODO? -left/-right needs to be added back?
+        // TODO FIXME: border gets cutted away, if orignal page had wrong size
+        // page->"uncrop"(rect);  // page->setMedia()
         page->add_border_rect(rect,param.border,1.0/pgedit.scale);
       }
 
-//      curpage->add_subpage(page,pgedit.xpos+xpos,pgedit.ypos+ypos,pgedit.scale,&rect);
+//      curpage->add_subpage(page,pgedit.xpos+xpos,pgedit.ypos+ypos,pgedit.scale,&rect); // TODO: FIXME 
       curpage->add_subpage(page,pgedit.xpos+xpos,pgedit.ypos+ypos,pgedit.scale);
 
 #ifdef DEBUG
@@ -278,7 +292,7 @@ bool processPDFTOPDF(PDFTOPDF_Processor &proc,ProcessingParameters &param) // {{
       }
 #endif
 
-      pgedit.dump();
+//      pgedit.dump();
     }
     if ( (param.withPage(outputno))&&(curpage) ) {
       curpage->rotate(param.orientation);

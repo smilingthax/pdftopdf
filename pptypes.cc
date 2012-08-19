@@ -74,8 +74,9 @@ void BorderType_dump(BorderType border) // {{{
 // }}}
 
 
-void PageRect::rotate(Rotation r) // {{{
+void PageRect::rotate_move(Rotation r,float pwidth,float pheight) // {{{
 {
+#if 1
   if (r>=ROT_180) {
     std::swap(top,bottom);
     std::swap(left,right);
@@ -88,7 +89,75 @@ void PageRect::rotate(Rotation r) // {{{
     right=tmp;
 
     std::swap(width,height);
+    std::swap(pwidth,pheight);
   }
+  if ( (r==ROT_90)||(r==ROT_180) ) {
+    left=pwidth-left;
+    right=pwidth-right;
+  } 
+  if ( (r==ROT_270)||(r==ROT_180) ) {
+    top=pheight-top;
+    bottom=pheight-bottom;
+  }
+#else
+  switch (r) {
+  case ROT_0: // no-op
+    break;
+  case ROT_90:
+    const float tmp0=bottom;
+    bottom=left;
+    left=pheight-top;
+    top=right;
+    right=pheight-tmp0;
+
+    std::swap(width,height);
+    break;
+  case ROT_180:
+    const float tmp1=left;
+    left=width-right;
+    right=width-left;
+
+    const float tmp2=top;
+    top=pheight-bottom;
+    bottom=pheight-tmp2;
+    break;
+  case ROT_270:
+    const float tmp3=top;
+    top=pwidth-left;
+    left=bottom;
+    bottom=pwidth-right;
+    right=tmp3;
+
+    std::swap(width,height);
+    break;
+  }
+#endif
+}
+// }}}
+
+void PageRect::scale(float mult) // {{{
+{
+  if (mult==1.0) {
+    return;
+  }
+  assert(mult!=0.0);
+
+  bottom*=mult;
+  left*=mult;
+  top*=mult;
+  right*=mult;
+
+  width*=mult;
+  height*=mult;
+}
+// }}}
+
+void PageRect::translate(float tx,float ty) // {{{
+{
+  left+=tx;
+  bottom+=ty;
+  right+=tx;
+  top+=ty;
 }
 // }}}
 
