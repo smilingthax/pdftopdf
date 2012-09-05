@@ -460,6 +460,19 @@ void QPDF_PDFTOPDF_Processor::addCM(const char *defaulticc,const char *outputicc
 }
 // }}}
 
+
+// TODO: missing qpdf api, for now
+void QPDF_PDFTOPDF_Processor::setComments(const std::vector<std::string> &comments) // {{{
+{
+  fprintf(stderr,"TODO:\n");
+  for (auto &it : comments) {
+    // TODO:
+    assert(it.at(0)=='%');
+    fprintf(stderr,"%s\n",it.c_str());
+  }
+}
+// }}}
+
 void QPDF_PDFTOPDF_Processor::emitFile(FILE *f,ArgOwnership take) // {{{
 {
   if (!pdf) {
