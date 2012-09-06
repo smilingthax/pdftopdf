@@ -64,6 +64,7 @@ private:
   std::vector<QPDFObjectHandle> orig_pages;
 
   bool hasCM;
+  std::string extraheader;
 };
 
 #endif

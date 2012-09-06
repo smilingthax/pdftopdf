@@ -461,18 +461,18 @@ void QPDF_PDFTOPDF_Processor::addCM(const char *defaulticc,const char *outputicc
 // }}}
 
 
-// TODO: missing qpdf api, for now
 void QPDF_PDFTOPDF_Processor::setComments(const std::vector<std::string> &comments) // {{{
 {
-  fprintf(stderr,"TODO:\n");
+  extraheader.clear();
   for (auto &it : comments) {
-    // TODO:
     assert(it.at(0)=='%');
-    fprintf(stderr,"%s\n",it.c_str());
+    extraheader.append(it);
+    extraheader.push_back('\n');
   }
 }
 // }}}
 
+// TODO: missing qpdf api, for now
 void QPDF_PDFTOPDF_Processor::emitFile(FILE *f,ArgOwnership take) // {{{
 {
   if (!pdf) {
@@ -495,10 +495,14 @@ void QPDF_PDFTOPDF_Processor::emitFile(FILE *f,ArgOwnership take) // {{{
   } else {
     out.setMinimumPDFVersion("1.2");
   }
+  if (!extraheader.empty()) {
+//    out.setExtraHeaderText(extraheader);
+  }
   out.write();
 }
 // }}}
 
+// TODO: missing qpdf api, for now
 void QPDF_PDFTOPDF_Processor::emitFilename(const char *name) // {{{
 {
   if (!pdf) {
@@ -510,6 +514,10 @@ void QPDF_PDFTOPDF_Processor::emitFilename(const char *name) // {{{
     out.setMinimumPDFVersion("1.4");
   } else {
     out.setMinimumPDFVersion("1.2");
+  }
+  if (!extraheader.empty()) {
+    fprintf(stderr,"TODO:\n%s",extraheader.c_str()); // TODO
+//    out.setExtraHeaderText(extraheader);
   }
   out.write();
 }
